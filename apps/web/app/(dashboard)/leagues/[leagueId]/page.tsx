@@ -11,14 +11,14 @@ export default async function LeagueChatPage({ params }: Props) {
   if (!session?.user?.email) redirect('/login')
 
   await connectDB()
-  const user = await UserModel.findOne({ email: session.user.email }).lean()
-  const league = await LeagueModel.findOne({ slug: params.leagueId }).lean()
+  const user = await UserModel.findOne({ email: session.user.email }).lean() as any
+  const league = await LeagueModel.findOne({ slug: params.leagueId }).lean() as any
   if (!league) notFound()
 
   const membership = await MembershipModel.findOne({
     userId: user?._id,
     leagueId: league._id,
-  }).lean()
+  }).lean() as any
 
   return (
     <div className="flex flex-col h-full">

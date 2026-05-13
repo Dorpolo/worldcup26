@@ -1,32 +1,8 @@
-import { auth } from '@/auth'
-import { NextResponse } from 'next/server'
+import NextAuth from 'next-auth'
+import { authConfig } from './auth.config'
 
-export default auth((req) => {
-  const isLoggedIn = !!req.auth
-  const isAuthRoute = req.nextUrl.pathname.startsWith('/login') ||
-    req.nextUrl.pathname.startsWith('/verify')
-  const isApiAuthRoute = req.nextUrl.pathname.startsWith('/api/auth')
-  const isCronRoute = req.nextUrl.pathname.startsWith('/api/cron')
-
-  // Cron routes protected by CRON_SECRET header (not session)
-  if (isCronRoute) return NextResponse.next()
-
-  // NextAuth API routes always pass
-  if (isApiAuthRoute) return NextResponse.next()
-
-  // Auth pages: redirect to home if already logged in
-  if (isAuthRoute) {
-    if (isLoggedIn) return NextResponse.redirect(new URL('/leagues', req.nextUrl))
-    return NextResponse.next()
-  }
-
-  // All other routes require auth
-  if (!isLoggedIn) {
-    return NextResponse.redirect(new URL('/login', req.nextUrl))
-  }
-
-  return NextResponse.next()
-})
+// Uses edge-safe config only — no Mongoose imports
+export default NextAuth(authConfig).auth
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.png$).*)'],

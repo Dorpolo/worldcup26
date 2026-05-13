@@ -8,7 +8,7 @@ interface Props {
 
 export default async function RulesPage({ params }: Props) {
   await connectDB()
-  const league = await LeagueModel.findOne({ slug: params.leagueId }).lean()
+  const league = await LeagueModel.findOne({ slug: params.leagueId }).lean() as any
   if (!league) notFound()
 
   const markdown = generateRulesMarkdown(league.name, league.scoringConfig as any)

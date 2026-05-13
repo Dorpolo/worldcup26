@@ -12,6 +12,7 @@ const NAV_TABS = [
   { href: '', label: '💬 Chat', segment: null },
   { href: '/leaderboard', label: '🏆 Leaderboard', segment: 'leaderboard' },
   { href: '/predictions', label: '📝 Predictions', segment: 'predictions' },
+  { href: '/bonus', label: '🎁 Bonuses', segment: 'bonus' },
   { href: '/cup', label: '🥇 Cup', segment: 'cup' },
   { href: '/stats', label: '📊 Stats', segment: 'stats' },
   { href: '/rules', label: '📋 Rules', segment: 'rules' },
@@ -22,16 +23,16 @@ export default async function LeagueLayout({ children, params }: Props) {
   if (!session?.user?.email) redirect('/login')
 
   await connectDB()
-  const user = await UserModel.findOne({ email: session.user.email }).lean()
+  const user = await UserModel.findOne({ email: session.user.email }).lean() as any
   if (!user) redirect('/login')
 
-  const league = await LeagueModel.findOne({ slug: params.leagueId }).lean()
+  const league = await LeagueModel.findOne({ slug: params.leagueId }).lean() as any
   if (!league) notFound()
 
   const membership = await MembershipModel.findOne({
     userId: user._id,
     leagueId: league._id,
-  }).lean()
+  }).lean() as any
 
   if (!membership) {
     // User is not a member — redirect to join or leagues list

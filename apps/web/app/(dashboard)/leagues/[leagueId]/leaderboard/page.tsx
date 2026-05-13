@@ -11,14 +11,14 @@ export default async function LeaderboardPage({ params }: Props) {
   if (!session?.user?.email) redirect('/login')
 
   await connectDB()
-  const user = await UserModel.findOne({ email: session.user.email }).lean()
-  const league = await LeagueModel.findOne({ slug: params.leagueId }).lean()
+  const user = await UserModel.findOne({ email: session.user.email }).lean() as any
+  const league = await LeagueModel.findOne({ slug: params.leagueId }).lean() as any
   if (!league) notFound()
 
   const memberships = await MembershipModel.find({ leagueId: league._id })
     .populate('userId', 'name avatar email')
     .sort({ totalPoints: -1 })
-    .lean()
+    .lean() as any
 
   const currentUserId = String(user?._id)
 
@@ -27,7 +27,7 @@ export default async function LeaderboardPage({ params }: Props) {
       <h2 className="text-xl font-bold mb-6">Leaderboard</h2>
 
       <div className="space-y-2 max-w-2xl">
-        {memberships.map((m, i) => {
+        {memberships.map((m: any, i: number) => {
           const member = m.userId as any
           const isMe = String(member._id) === currentUserId
           const rank = i + 1

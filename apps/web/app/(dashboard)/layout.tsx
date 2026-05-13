@@ -9,14 +9,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!session?.user?.email) redirect('/login')
 
   await connectDB()
-  const user = await UserModel.findOne({ email: session.user.email }).lean()
+  const user = await UserModel.findOne({ email: session.user.email }).lean() as any
   if (!user) redirect('/login')
 
   const memberships = await MembershipModel.find({ userId: user._id })
     .populate('leagueId', 'name slug avatar')
-    .lean()
+    .lean() as any
 
-  const leagues = memberships.map((m) => ({
+  const leagues = memberships.map((m: any) => ({
     id: String((m.leagueId as any)._id),
     slug: (m.leagueId as any).slug,
     name: (m.leagueId as any).name,
@@ -42,7 +42,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider px-2 py-1">
             My Leagues
           </p>
-          {leagues.map((league) => (
+          {leagues.map((league: any) => (
             <Link
               key={league.id}
               href={`/leagues/${league.slug}`}

@@ -12,7 +12,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if (error) return error
 
   await connectDB()
-  const league = await LeagueModel.findById(params.leagueId).lean()
+  const league = await LeagueModel.findById(params.leagueId).lean() as any
   if (!league) return NextResponse.json({ ok: false, error: 'Not found' }, { status: 404 })
 
   const markdown = generateRulesMarkdown(league.name, league.scoringConfig as any)

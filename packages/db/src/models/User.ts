@@ -19,7 +19,7 @@ const UserSchema = new Schema<UserDocument>(
     avatar: { type: String, default: '' },
     timezone: { type: String, default: 'UTC' },
     authProvider: { type: String, enum: ['email', 'google'], required: true },
-    googleId: { type: String, sparse: true },
+    googleId: { type: String },
     apiKey: { type: String, required: true }, // stored as-is, generated with nanoid(32)
   },
   { timestamps: true }

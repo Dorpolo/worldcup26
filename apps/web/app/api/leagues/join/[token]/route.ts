@@ -19,7 +19,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
     const league = await LeagueModel.findOne({
       'inviteTokens.token': params.token,
       'inviteTokens.expiresAt': { $gt: new Date() },
-    }).lean()
+    }).lean() as any
     if (!league) {
       return NextResponse.json({ ok: false, error: 'Invalid or expired invite link' }, { status: 400 })
     }
@@ -29,9 +29,9 @@ export async function POST(_req: NextRequest, { params }: Params) {
   const userId = (user as any)._id
 
   // Check if already a member
-  const existing = await MembershipModel.findOne({ userId, leagueId }).lean()
+  const existing = await MembershipModel.findOne({ userId, leagueId }).lean() as any
   if (existing) {
-    const league = await LeagueModel.findById(leagueId).lean()
+    const league = await LeagueModel.findById(leagueId).lean() as any
     return NextResponse.json({ ok: true, data: { alreadyMember: true, league } })
   }
 

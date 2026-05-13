@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
   if (leagueId) query.leagueId = leagueId
   if (matchId) query.matchId = matchId
 
-  const predictions = await PredictionModel.find(query).lean()
+  const predictions = await PredictionModel.find(query).lean() as any
   return NextResponse.json({ ok: true, data: predictions })
 }
 
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 
   await connectDB()
 
-  const match = await MatchModel.findById(parsed.data.matchId).lean()
+  const match = await MatchModel.findById(parsed.data.matchId).lean() as any
   if (!match) return NextResponse.json({ ok: false, error: 'Match not found' }, { status: 404 })
 
   if (isMatchLocked(match.lockAt)) {

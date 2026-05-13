@@ -1,10 +1,18 @@
 import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
 import Resend from 'next-auth/providers/resend'
+import { MongoDBAdapter } from '@auth/mongodb-adapter'
 import { connectDB, UserModel } from '@worldcup26/db'
+import mongoose from 'mongoose'
 import { nanoid } from 'nanoid'
+import { authConfig } from './auth.config'
+
+// Reuse the Mongoose MongoClient for the NextAuth adapter (magic link token storage)
+const clientPromise = connectDB().then(() => mongoose.connection.getClient()) as any
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
+  adapter: MongoDBAdapter(clientPromise),
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -19,10 +27,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       await connectDB()
-
       const existingUser = await UserModel.findOne({ email: user.email })
       if (!existingUser) {
-        // Create user on first sign-in
         await UserModel.create({
           email: user.email,
           name: user.name ?? user.email?.split('@')[0] ?? 'Player',
@@ -33,14 +39,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           timezone: 'UTC',
         })
       }
-
       return true
     },
 
     async session({ session }) {
       if (session.user?.email) {
         await connectDB()
-        const dbUser = await UserModel.findOne({ email: session.user.email }).lean()
+        const dbUser = await UserModel.findOne({ email: session.user.email }).lean() as any
         if (dbUser) {
           session.user.id = String(dbUser._id)
           session.user.image = dbUser.avatar || session.user.image
@@ -50,18 +55,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async jwt({ token, user }) {
-      if (user?.email) {
-        token.email = user.email
-      }
+      if (user?.email) token.email = user.email
       return token
     },
   },
-
-  pages: {
-    signIn: '/login',
-    verifyRequest: '/verify',
-    error: '/login',
-  },
-
-  session: { strategy: 'jwt' },
 })

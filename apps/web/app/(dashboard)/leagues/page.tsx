@@ -8,12 +8,12 @@ export default async function LeaguesPage() {
   if (!session?.user?.email) redirect('/login')
 
   await connectDB()
-  const user = await UserModel.findOne({ email: session.user.email }).lean()
+  const user = await UserModel.findOne({ email: session.user.email }).lean() as any
   if (!user) redirect('/login')
 
   const memberships = await MembershipModel.find({ userId: user._id })
     .populate('leagueId')
-    .lean()
+    .lean() as any
 
   if (memberships.length === 0) {
     return (
