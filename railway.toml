@@ -1,0 +1,31 @@
+# Railway multi-service configuration
+# Each service is configured individually in the Railway dashboard.
+# This file documents the intended service setup.
+
+# Service 1: Express API + Socket.io
+# - Root directory: apps/api
+# - Build command: pnpm install && pnpm build
+# - Start command: node dist/index.js
+# - Port: 4000
+# - Custom domain: api.worldcup26.com
+
+# Service 2: Python LangGraph Agent
+# - Root directory: apps/agent
+# - Builder: Dockerfile
+# - Port: 8000
+# - Custom domain: agent.worldcup26.com
+
+# Service 3: MCP Server
+# - Root directory: apps/mcp
+# - Build command: pnpm install && pnpm build
+# - Start command: node dist/index.js
+# - Port: 5000
+# - Custom domain: mcp.worldcup26.com
+
+# Plugins (provisioned via Railway dashboard):
+# - MongoDB: automatically injects MONGODB_URL env var
+# (Redis: use Upstash — external managed service)
+
+# Shared environment variables (set in Railway Variables → Shared):
+# MONGODB_URI, REDIS_URL, ANTHROPIC_API_KEY, API_FOOTBALL_KEY,
+# INTERNAL_API_KEY, CRON_SECRET, NEXTAUTH_URL

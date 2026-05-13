@@ -1,0 +1,25 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/sync-matches",
+      "schedule": "*/5 * * * *",
+      "headers": {
+        "x-cron-secret": "@cron_secret"
+      }
+    },
+    {
+      "path": "/api/cron/lock-predictions",
+      "schedule": "*/1 * * * *",
+      "headers": {
+        "x-cron-secret": "@cron_secret"
+      }
+    },
+    {
+      "path": "/api/cron/calculate-scores",
+      "schedule": "*/2 * * * *",
+      "headers": {
+        "x-cron-secret": "@cron_secret"
+      }
+    }
+  ]
+}
