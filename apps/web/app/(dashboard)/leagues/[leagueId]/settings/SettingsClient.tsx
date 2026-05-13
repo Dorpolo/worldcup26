@@ -41,6 +41,7 @@ export function SettingsClient({ leagueId, leagueSlug, scoringConfig: initial, m
   const [copied, setCopied] = useState(false)
   const [isPendingSave, startSave] = useTransition()
   const [isPendingInvite, startInvite] = useTransition()
+  const [isSyncing, startSync] = useTransition()
 
   function setGroupField(field: keyof ScoringConfig['groupStage'], value: number) {
     setConfig((c) => ({ ...c, groupStage: { ...c.groupStage, [field]: value } }))
@@ -108,106 +109,180 @@ export function SettingsClient({ leagueId, leagueSlug, scoringConfig: initial, m
     }
   }
 
+  function handleSyncFixtures() {
+    startSync(async () => {
+      try {
+        const res = await fetch('/api/admin/sync-fixtures', { method: 'POST' })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error ?? 'Sync failed')
+        toast.success(`Fixtures synced — ${data.synced ?? 0} matches updated`)
+      } catch (err: any) {
+        toast.error(err.message)
+      }
+    })
+  }
+
+  const cardStyle = {
+    background: 'rgb(36 34 32)',
+    border: '1px solid rgb(255 255 255 / 0.07)',
+    borderRadius: '16px',
+    padding: '20px',
+  }
+
+  const labelStyle = { color: 'rgb(107 100 92)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }
+  const inputStyle = {
+    background: 'rgb(255 255 255 / 0.05)',
+    border: '1px solid rgb(255 255 255 / 0.09)',
+    borderRadius: '10px',
+    color: 'rgb(240 235 227)',
+    padding: '8px 12px',
+    fontSize: '13px',
+    outline: 'none',
+    width: '100%',
+  }
+  const primaryBtn = {
+    background: 'rgb(217 119 87)',
+    color: 'rgb(26 25 23)',
+    borderRadius: '10px',
+    padding: '9px 18px',
+    fontSize: '12px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    border: 'none',
+    opacity: 1,
+  }
+  const ghostBtn = {
+    background: 'rgb(255 255 255 / 0.06)',
+    color: 'rgb(160 152 144)',
+    borderRadius: '10px',
+    padding: '9px 18px',
+    fontSize: '12px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    border: '1px solid rgb(255 255 255 / 0.08)',
+  }
+
   return (
-    <div className="space-y-8">
-      {/* Invite Link */}
-      <section className="border rounded-lg p-5 space-y-3">
-        <h2 className="font-semibold">Invite Members</h2>
-        <p className="text-sm text-muted-foreground">Generate a 7-day invite link to share with friends.</p>
-        <div className="flex gap-2 flex-wrap">
-          <button
-            onClick={handleGenerateInvite}
-            disabled={isPendingInvite}
-            className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          >
-            {isPendingInvite ? 'Generating…' : 'Generate Invite Link'}
+    <div className="space-y-5">
+
+      {/* Invite Members */}
+      <section style={cardStyle}>
+        <div className="space-y-3">
+          <div>
+            <p className="text-[13px] font-semibold mb-0.5" style={{ color: 'rgb(240 235 227)' }}>Invite Members</p>
+            <p className="text-[12px]" style={{ color: 'rgb(107 100 92)' }}>Share a 7-day invite link with friends.</p>
+          </div>
+          <div className="flex gap-2 flex-wrap items-center">
+            <button onClick={handleGenerateInvite} disabled={isPendingInvite} style={{ ...primaryBtn, opacity: isPendingInvite ? 0.5 : 1 }}>
+              {isPendingInvite ? 'Generating…' : 'Generate Invite Link'}
+            </button>
+            {inviteUrl && (
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <input readOnly value={inviteUrl} style={{ ...inputStyle, fontSize: '11px' }} className="flex-1 min-w-0 truncate" />
+                <button onClick={handleCopy} style={ghostBtn}>
+                  {copied ? '✓ Copied' : 'Copy'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Sync Fixtures */}
+      <section style={cardStyle}>
+        <div className="space-y-3">
+          <div>
+            <p className="text-[13px] font-semibold mb-0.5" style={{ color: 'rgb(240 235 227)' }}>Fixture Sync</p>
+            <p className="text-[12px]" style={{ color: 'rgb(107 100 92)' }}>
+              Pull the latest WC2026 fixtures and results from API-Football. Safe to run multiple times.
+            </p>
+          </div>
+          <button onClick={handleSyncFixtures} disabled={isSyncing} style={{ ...ghostBtn, opacity: isSyncing ? 0.5 : 1 }}>
+            {isSyncing ? 'Syncing…' : '↻  Sync Fixtures'}
           </button>
-          {inviteUrl && (
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              <input
-                readOnly
-                value={inviteUrl}
-                className="flex-1 min-w-0 text-xs border rounded-md px-3 py-2 bg-muted truncate"
-              />
-              <button
-                onClick={handleCopy}
-                className="shrink-0 px-3 py-2 text-xs border rounded-md hover:bg-accent transition-colors"
-              >
-                {copied ? '✓ Copied' : 'Copy'}
-              </button>
-            </div>
-          )}
         </div>
       </section>
 
       {/* Scoring Config */}
-      <section className="border rounded-lg p-5 space-y-5">
-        <h2 className="font-semibold">Scoring Configuration</h2>
+      <section style={cardStyle}>
+        <div className="space-y-5">
+          <p className="text-[13px] font-semibold" style={{ color: 'rgb(240 235 227)' }}>Scoring Configuration</p>
 
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-sm font-medium mb-2">Group Stage</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <ScoreField label="Exact score" value={config.groupStage.exactScore} onChange={(v) => setGroupField('exactScore', v)} />
-              <ScoreField label="Correct result" value={config.groupStage.correctResult} onChange={(v) => setGroupField('correctResult', v)} />
+          <div className="space-y-4">
+            <div>
+              <p className="mb-2.5" style={labelStyle}>Group Stage</p>
+              <div className="grid grid-cols-2 gap-3">
+                <ScoreField label="Exact score" value={config.groupStage.exactScore} onChange={(v) => setGroupField('exactScore', v)} />
+                <ScoreField label="Correct result" value={config.groupStage.correctResult} onChange={(v) => setGroupField('correctResult', v)} />
+              </div>
+            </div>
+
+            <div style={{ borderTop: '1px solid rgb(255 255 255 / 0.05)', paddingTop: '16px' }}>
+              <p className="mb-2.5" style={labelStyle}>Knockout Stage</p>
+              <div className="grid grid-cols-3 gap-3">
+                <ScoreField label="Exact score" value={config.knockoutStage.exactScore} onChange={(v) => setKnockoutField('exactScore', v)} />
+                <ScoreField label="Correct result" value={config.knockoutStage.correctResult} onChange={(v) => setKnockoutField('correctResult', v)} />
+                <ScoreField label="Right team through" value={config.knockoutStage.correctTeamAdvancing} onChange={(v) => setKnockoutField('correctTeamAdvancing', v)} />
+              </div>
+            </div>
+
+            <div style={{ borderTop: '1px solid rgb(255 255 255 / 0.05)', paddingTop: '16px' }}>
+              <p className="mb-3" style={labelStyle}>Bonus Predictions</p>
+              <div className="space-y-2.5">
+                <BonusRow label="Tournament Winner" bonus={config.bonuses.tournamentWinner} onToggle={(v) => setBonusField('tournamentWinner', 'enabled', v)} onPoints={(v) => setBonusField('tournamentWinner', 'points', v)} />
+                <BonusRow label="Top Scorer" bonus={config.bonuses.topScorer} onToggle={(v) => setBonusField('topScorer', 'enabled', v)} onPoints={(v) => setBonusField('topScorer', 'points', v)} />
+                <BonusRow label="Top Assist" bonus={config.bonuses.topAssist} onToggle={(v) => setBonusField('topAssist', 'enabled', v)} onPoints={(v) => setBonusField('topAssist', 'points', v)} />
+              </div>
             </div>
           </div>
 
-          <div>
-            <h3 className="text-sm font-medium mb-2">Knockout Stage</h3>
-            <div className="grid grid-cols-3 gap-3">
-              <ScoreField label="Exact score" value={config.knockoutStage.exactScore} onChange={(v) => setKnockoutField('exactScore', v)} />
-              <ScoreField label="Correct result" value={config.knockoutStage.correctResult} onChange={(v) => setKnockoutField('correctResult', v)} />
-              <ScoreField label="Right team through" value={config.knockoutStage.correctTeamAdvancing} onChange={(v) => setKnockoutField('correctTeamAdvancing', v)} />
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-medium mb-2">Bonus Predictions</h3>
-            <div className="space-y-2">
-              <BonusRow label="Tournament Winner" bonus={config.bonuses.tournamentWinner} onToggle={(v) => setBonusField('tournamentWinner', 'enabled', v)} onPoints={(v) => setBonusField('tournamentWinner', 'points', v)} />
-              <BonusRow label="Top Scorer" bonus={config.bonuses.topScorer} onToggle={(v) => setBonusField('topScorer', 'enabled', v)} onPoints={(v) => setBonusField('topScorer', 'points', v)} />
-              <BonusRow label="Top Assist" bonus={config.bonuses.topAssist} onToggle={(v) => setBonusField('topAssist', 'enabled', v)} onPoints={(v) => setBonusField('topAssist', 'points', v)} />
-            </div>
-          </div>
+          <button onClick={handleSaveConfig} disabled={isPendingSave} style={{ ...primaryBtn, opacity: isPendingSave ? 0.5 : 1 }}>
+            {isPendingSave ? 'Saving…' : 'Save Scoring Config'}
+          </button>
         </div>
-
-        <button
-          onClick={handleSaveConfig}
-          disabled={isPendingSave}
-          className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-        >
-          {isPendingSave ? 'Saving…' : 'Save Scoring Config'}
-        </button>
       </section>
 
       {/* Member Management */}
-      <section className="border rounded-lg p-5 space-y-3">
-        <h2 className="font-semibold">Members ({members.length})</h2>
-        <div className="space-y-2">
-          {members.map((m) => (
-            <div key={m.userId} className="flex items-center gap-3 py-2">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium shrink-0">
-                {m.name?.[0]?.toUpperCase() ?? '?'}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{m.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{m.email}</p>
-              </div>
-              <span className="text-xs text-muted-foreground">{m.totalPoints} pts</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${m.role === 'owner' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                {m.role}
-              </span>
-              {m.role !== 'owner' && m.userId !== currentUserId && (
-                <button
-                  onClick={() => handleKick(m.userId, m.name)}
-                  className="text-xs text-destructive hover:underline"
+      <section style={cardStyle}>
+        <div className="space-y-3">
+          <p className="text-[13px] font-semibold" style={{ color: 'rgb(240 235 227)' }}>
+            Members <span style={{ color: 'rgb(107 100 92)', fontWeight: 400 }}>({members.length})</span>
+          </p>
+          <div className="space-y-1">
+            {members.map((m) => (
+              <div key={m.userId} className="flex items-center gap-3 py-2" style={{ borderBottom: '1px solid rgb(255 255 255 / 0.04)' }}>
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
+                  style={{ background: 'rgb(217 119 87 / 0.12)', color: 'rgb(217 119 87)' }}
                 >
-                  Remove
-                </button>
-              )}
-            </div>
-          ))}
+                  {m.name?.[0]?.toUpperCase() ?? '?'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-medium truncate" style={{ color: 'rgb(240 235 227)' }}>{m.name}</p>
+                  <p className="text-[11px] truncate" style={{ color: 'rgb(107 100 92)' }}>{m.email}</p>
+                </div>
+                <span className="text-[11px] font-mono" style={{ color: 'rgb(107 100 92)' }}>{m.totalPoints} pts</span>
+                <span
+                  className="text-[10px] px-2 py-0.5 rounded-full"
+                  style={m.role === 'owner'
+                    ? { background: 'rgb(217 119 87 / 0.12)', color: 'rgb(217 119 87)' }
+                    : { background: 'rgb(255 255 255 / 0.05)', color: 'rgb(107 100 92)' }
+                  }
+                >
+                  {m.role}
+                </span>
+                {m.role !== 'owner' && m.userId !== currentUserId && (
+                  <button
+                    onClick={() => handleKick(m.userId, m.name)}
+                    className="text-[11px] transition-colors hover:opacity-80"
+                    style={{ color: 'rgb(248 81 73)', background: 'none', border: 'none', cursor: 'pointer' }}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </div>
@@ -216,15 +291,24 @@ export function SettingsClient({ leagueId, leagueSlug, scoringConfig: initial, m
 
 function ScoreField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
-    <div className="space-y-1">
-      <label className="text-xs text-muted-foreground">{label}</label>
+    <div className="space-y-1.5">
+      <label className="text-[11px]" style={{ color: 'rgb(107 100 92)' }}>{label}</label>
       <input
         type="number"
         min={0}
         max={20}
         value={value}
         onChange={(e) => onChange(parseInt(e.target.value, 10) || 0)}
-        className="w-full border rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+        style={{
+          background: 'rgb(255 255 255 / 0.05)',
+          border: '1px solid rgb(255 255 255 / 0.09)',
+          borderRadius: '10px',
+          color: 'rgb(240 235 227)',
+          padding: '7px 12px',
+          fontSize: '13px',
+          outline: 'none',
+          width: '100%',
+        }}
       />
     </div>
   )
@@ -243,13 +327,24 @@ function BonusRow({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <input
-        type="checkbox"
-        checked={bonus.enabled}
-        onChange={(e) => onToggle(e.target.checked)}
-        className="rounded"
-      />
-      <span className="text-sm flex-1">{label}</span>
+      <button
+        onClick={() => onToggle(!bonus.enabled)}
+        className="w-8 h-4 rounded-full flex-shrink-0 relative transition-all"
+        style={{
+          background: bonus.enabled ? 'rgb(217 119 87)' : 'rgb(255 255 255 / 0.1)',
+          border: 'none',
+          cursor: 'pointer',
+        }}
+      >
+        <span
+          className="absolute top-0.5 w-3 h-3 rounded-full transition-all"
+          style={{
+            background: 'rgb(255 255 255)',
+            left: bonus.enabled ? 'calc(100% - 14px)' : '2px',
+          }}
+        />
+      </button>
+      <span className="text-[12px] flex-1" style={{ color: bonus.enabled ? 'rgb(240 235 227)' : 'rgb(107 100 92)' }}>{label}</span>
       <input
         type="number"
         min={0}
@@ -257,9 +352,20 @@ function BonusRow({
         value={bonus.points}
         disabled={!bonus.enabled}
         onChange={(e) => onPoints(parseInt(e.target.value, 10) || 0)}
-        className="w-16 border rounded-md px-2 py-1 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-40"
+        style={{
+          background: 'rgb(255 255 255 / 0.05)',
+          border: '1px solid rgb(255 255 255 / 0.09)',
+          borderRadius: '8px',
+          color: bonus.enabled ? 'rgb(240 235 227)' : 'rgb(107 100 92)',
+          padding: '5px 8px',
+          fontSize: '12px',
+          outline: 'none',
+          width: '52px',
+          opacity: bonus.enabled ? 1 : 0.4,
+          textAlign: 'center',
+        }}
       />
-      <span className="text-xs text-muted-foreground">pts</span>
+      <span className="text-[11px]" style={{ color: 'rgb(107 100 92)' }}>pts</span>
     </div>
   )
 }

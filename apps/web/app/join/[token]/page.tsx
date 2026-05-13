@@ -2,20 +2,23 @@ import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { JoinClient } from './JoinClient'
 
-interface Props {
-  params: { token: string }
-}
+interface Props { params: { token: string } }
 
 export default async function JoinPage({ params }: Props) {
   const session = await auth()
-
   if (!session?.user) {
-    // Store the token in the redirect URL so we return here after login
     redirect(`/login?callbackUrl=/join/${params.token}`)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: 'rgb(26 25 23)' }}
+    >
+      <div
+        className="pointer-events-none fixed inset-0"
+        style={{ background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgb(217 119 87 / 0.08) 0%, transparent 70%)' }}
+      />
       <JoinClient token={params.token} />
     </div>
   )

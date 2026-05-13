@@ -31,14 +31,14 @@ export default async function BonusPage({ params }: Props) {
   const config = league.scoringConfig.bonuses
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="h-full overflow-y-auto p-5">
+      <div className="max-w-2xl mx-auto space-y-4">
         <div>
-          <h1 className="text-xl font-semibold">Bonus Predictions</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-[15px] font-semibold" style={{ color: 'rgb(240 235 227)' }}>Bonus Predictions</h1>
+          <p className="text-[12px] mt-0.5" style={{ color: isLocked ? 'rgb(240 160 48)' : 'rgb(107 100 92)' }}>
             {isLocked
-              ? 'Bonus predictions are locked — tournament has started.'
-              : 'These lock when the first match kicks off.'}
+              ? '🔒 Locked — tournament has started'
+              : 'Lock when the first match kicks off'}
           </p>
         </div>
 

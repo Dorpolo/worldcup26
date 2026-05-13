@@ -1,7 +1,9 @@
 import { auth } from '@/auth'
 import { redirect, notFound } from 'next/navigation'
-import { connectDB, UserModel, LeagueModel, MembershipModel } from '@worldcup26/db'
+import { connectDB, UserModel, LeagueModel, MembershipModel, ChatMessageModel } from '@worldcup26/db'
 import Link from 'next/link'
+import { ChatPanel } from '@/components/chat/ChatPanel'
+import { LeagueTabNav } from '@/components/shared/LeagueTabNav'
 
 interface Props {
   children: React.ReactNode
@@ -9,13 +11,13 @@ interface Props {
 }
 
 const NAV_TABS = [
-  { href: '', label: '💬 Chat', segment: null },
-  { href: '/leaderboard', label: '🏆 Leaderboard', segment: 'leaderboard' },
-  { href: '/predictions', label: '📝 Predictions', segment: 'predictions' },
-  { href: '/bonus', label: '🎁 Bonuses', segment: 'bonus' },
-  { href: '/cup', label: '🥇 Cup', segment: 'cup' },
-  { href: '/stats', label: '📊 Stats', segment: 'stats' },
-  { href: '/rules', label: '📋 Rules', segment: 'rules' },
+  { href: '',             label: 'Overview',    icon: '◈' },
+  { href: '/leaderboard', label: 'Leaderboard', icon: '↑' },
+  { href: '/predictions', label: 'Predictions', icon: '⊡' },
+  { href: '/bonus',       label: 'Bonus',       icon: '★' },
+  { href: '/cup',         label: 'Cup',         icon: '◎' },
+  { href: '/stats',       label: 'Stats',       icon: '⌇' },
+  { href: '/rules',       label: 'Rules',       icon: '≡' },
 ]
 
 export default async function LeagueLayout({ children, params }: Props) {
@@ -34,51 +36,90 @@ export default async function LeagueLayout({ children, params }: Props) {
     leagueId: league._id,
   }).lean() as any
 
-  if (!membership) {
-    // User is not a member — redirect to join or leagues list
-    redirect('/leagues')
-  }
+  if (!membership) redirect('/leagues')
 
   const isOwner = membership.role === 'owner'
   const base = `/leagues/${params.leagueId}`
 
+  // Load last 20 chat messages for the panel
+  const history = await ChatMessageModel.find({
+    userId: user._id,
+    leagueId: league._id,
+  })
+    .sort({ createdAt: -1 })
+    .limit(20)
+    .lean() as any[]
+
+  const chatHistory = history.reverse().map((m: any) => ({
+    id: String(m._id),
+    role: m.role as 'user' | 'assistant',
+    content: m.content,
+  }))
+
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* League header */}
-      <header className="border-b px-6 py-3 flex items-center gap-4 shrink-0">
-        <div>
-          <h2 className="font-semibold">{league.name}</h2>
-          <p className="text-xs text-muted-foreground">
-            #{membership.rank} · {membership.totalPoints} pts · {league.memberCount} members
-          </p>
-        </div>
-        <div className="ml-auto flex items-center gap-2">
+    <div className="flex h-full overflow-hidden">
+      {/* ── Left: tabs + content ────────────────────────────────── */}
+      <div className="flex flex-col flex-1 overflow-hidden min-w-0">
+        {/* League header */}
+        <header
+          className="shrink-0 px-5 py-3 flex items-center gap-3"
+          style={{ borderBottom: '1px solid rgb(255 255 255 / 0.07)' }}
+        >
+          {/* League avatar */}
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden"
+            style={{ background: 'rgb(217 119 87 / 0.15)', color: 'rgb(217 119 87)' }}
+          >
+            {league.avatar ? (
+              <img src={league.avatar} alt="" className="w-full h-full object-cover" />
+            ) : (
+              league.name.charAt(0).toUpperCase()
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <h1 className="text-[13px] font-semibold truncate" style={{ color: 'rgb(240 235 227)' }}>
+              {league.name}
+            </h1>
+            <p className="text-[11px]" style={{ color: 'rgb(107 100 92)' }}>
+              Rank #{membership.rank ?? '—'} &nbsp;·&nbsp; {membership.totalPoints ?? 0} pts &nbsp;·&nbsp; {league.memberCount} members
+            </p>
+          </div>
+
           {isOwner && (
             <Link
               href={`${base}/settings`}
-              className="text-xs text-muted-foreground hover:text-foreground px-3 py-1 rounded-md hover:bg-accent transition-colors"
+              className="text-[11px] px-2.5 py-1.5 rounded-md transition-colors"
+              style={{ color: 'rgb(107 100 92)', background: 'rgb(255 255 255 / 0.05)' }}
             >
               Settings
             </Link>
           )}
+        </header>
+
+        {/* Tab nav */}
+        <nav
+          className="shrink-0 px-5 flex items-end gap-0.5 overflow-x-auto"
+          style={{ borderBottom: '1px solid rgb(255 255 255 / 0.07)' }}
+        >
+          <LeagueTabNav base={base} tabs={NAV_TABS} />
+        </nav>
+
+        {/* Page content */}
+        <div className="flex-1 overflow-hidden">
+          {children}
         </div>
-      </header>
+      </div>
 
-      {/* Tab nav */}
-      <nav className="border-b px-6 flex gap-1 shrink-0">
-        {NAV_TABS.map((tab) => (
-          <Link
-            key={tab.href}
-            href={`${base}${tab.href}`}
-            className="px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground border-b-2 border-transparent hover:border-primary transition-colors whitespace-nowrap"
-          >
-            {tab.label}
-          </Link>
-        ))}
-      </nav>
-
-      {/* Page content */}
-      <div className="flex-1 overflow-hidden">{children}</div>
+      {/* ── Right: persistent chat panel ────────────────────────── */}
+      <ChatPanel
+        leagueId={String(league._id)}
+        leagueName={league.name}
+        userName={user.name}
+        userRank={membership.rank ?? 0}
+        userPoints={membership.totalPoints ?? 0}
+        initialMessages={chatHistory}
+      />
     </div>
   )
 }

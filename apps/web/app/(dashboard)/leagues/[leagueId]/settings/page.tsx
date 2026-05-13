@@ -45,11 +45,11 @@ export default async function SettingsPage({ params }: Props) {
   }))
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
-      <div className="max-w-2xl mx-auto space-y-8">
-        <div>
-          <h1 className="text-xl font-semibold">League Settings</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage your league — owner only</p>
+    <div className="h-full overflow-y-auto p-5">
+      <div className="max-w-2xl mx-auto space-y-5">
+        <div className="pb-1">
+          <h1 className="text-[15px] font-semibold" style={{ color: 'rgb(240 235 227)' }}>Settings</h1>
+          <p className="text-[12px] mt-0.5" style={{ color: 'rgb(107 100 92)' }}>Owner-only controls</p>
         </div>
 
         <SettingsClient

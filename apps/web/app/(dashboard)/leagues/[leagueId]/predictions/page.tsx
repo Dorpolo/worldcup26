@@ -50,23 +50,42 @@ export default async function PredictionsPage({ params }: Props) {
 
   if (matches.length === 0) {
     return (
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-3xl mx-auto text-center py-16 text-muted-foreground">
-          <p className="text-4xl mb-4">📅</p>
-          <p className="text-lg font-medium">No fixtures yet</p>
-          <p className="text-sm mt-1">Fixtures will appear here once the league admin syncs the schedule.</p>
+      <div className="h-full overflow-y-auto flex items-center justify-center">
+        <div className="text-center space-y-3 py-16">
+          <p className="text-4xl">📅</p>
+          <p className="text-sm font-medium" style={{ color: 'rgb(160 152 144)' }}>No fixtures yet</p>
+          <p className="text-[12px]" style={{ color: 'rgb(107 100 92)' }}>
+            Fixtures will appear once the schedule is synced
+          </p>
         </div>
       </div>
     )
   }
 
+  const predicted = predictions.length
+  const total = matches.filter(m => m.status === 'scheduled' || m.status === 'locked').length
+
   return (
-    <div className="flex-1 overflow-y-auto p-6">
-      <div className="max-w-3xl mx-auto space-y-8">
+    <div className="h-full overflow-y-auto p-5">
+      <div className="max-w-3xl mx-auto space-y-6">
+
+        {/* Progress bar */}
+        {total > 0 && (
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgb(255 255 255 / 0.06)' }}>
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${Math.min((predicted / total) * 100, 100)}%`, background: 'rgb(217 119 87)' }}
+              />
+            </div>
+            <span className="text-[11px] font-mono shrink-0" style={{ color: 'rgb(107 100 92)' }}>
+              {predicted}/{total} predicted
+            </span>
+          </div>
+        )}
+
         {STAGE_ORDER.filter((s) => byStage.has(s)).map((stage) => {
           const stageMatches = byStage.get(stage)!
-
-          // Group by date within stage
           const byDate = new Map<string, typeof stageMatches>()
           for (const m of stageMatches) {
             const dateKey = new Date(m.kickoffAt).toLocaleDateString('en-GB', {
@@ -78,18 +97,25 @@ export default async function PredictionsPage({ params }: Props) {
 
           return (
             <section key={stage}>
-              <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
-                <span className="px-2 py-0.5 bg-primary/10 text-primary rounded text-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <span
+                  className="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full"
+                  style={{ background: 'rgb(217 119 87 / 0.12)', color: 'rgb(217 119 87)' }}
+                >
                   {STAGE_LABELS[stage] ?? stage}
                 </span>
-                <span className="text-xs text-muted-foreground">{stageMatches.length} matches</span>
-              </h2>
+                <span className="text-[10px]" style={{ color: 'rgb(107 100 92)' }}>
+                  {stageMatches.length} matches
+                </span>
+              </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {Array.from(byDate.entries()).map(([date, dateMatches]) => (
                   <div key={date}>
-                    <p className="text-xs text-muted-foreground font-medium mb-2 uppercase tracking-wide">{date}</p>
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: 'rgb(58 55 51)' }}>
+                      {date}
+                    </p>
+                    <div className="grid gap-2 sm:grid-cols-2">
                       {dateMatches.map((match) => {
                         const pred = predMap.get(String(match._id))
                         return (
@@ -102,7 +128,7 @@ export default async function PredictionsPage({ params }: Props) {
                             kickoffAt={match.kickoffAt.toISOString()}
                             lockAt={match.lockAt.toISOString()}
                             status={match.status}
-                            result={match.result}
+                            result={match.result as any}
                             group={match.group}
                             prediction={pred ? {
                               homeScore: pred.homeScore,
