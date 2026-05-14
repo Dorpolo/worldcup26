@@ -7,16 +7,18 @@ services:
       - mongo_data:/data/db
     environment:
       MONGO_INITDB_DATABASE: worldcup26
+    # Exposed on 27018 to avoid conflicts with a local mongod on 27017
     ports:
-      - "27017:27017"
+      - "27018:27017"
 
   redis:
     image: redis:7-alpine
     restart: unless-stopped
     volumes:
       - redis_data:/data
+    # Exposed on 6380 to avoid conflicts with a local Redis on 6379
     ports:
-      - "6379:6379"
+      - "6380:6379"
 
   # ── Next.js web app ──────────────────────────────────────────────────────
   web:
