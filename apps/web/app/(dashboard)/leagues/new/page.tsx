@@ -31,45 +31,61 @@ export default function NewLeaguePage() {
     }
   }
 
+  const inputStyle = {
+    background: 'rgb(255 255 255 / 0.05)',
+    border: '1px solid rgb(255 255 255 / 0.09)',
+    borderRadius: '12px',
+    color: 'rgb(240 235 227)',
+    padding: '10px 14px',
+    fontSize: '13px',
+    outline: 'none',
+    width: '100%',
+  }
+
   return (
     <div className="flex items-center justify-center h-full p-8">
-      <div className="w-full max-w-md space-y-6">
+      <div className="w-full max-w-md space-y-6" style={{ animation: 'fade-in 0.3s ease' }}>
         <div>
-          <h1 className="text-2xl font-bold">Create a league</h1>
-          <p className="text-muted-foreground">Invite friends and compete on World Cup predictions.</p>
+          <h1 className="text-xl font-semibold" style={{ color: 'rgb(240 235 227)' }}>Create a league</h1>
+          <p className="text-[13px] mt-1" style={{ color: 'rgb(107 100 92)' }}>Invite friends and compete on World Cup predictions.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">League name *</label>
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'rgb(107 100 92)' }}>
+              League name *
+            </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. The Lads FC"
               required
               maxLength={60}
-              className="w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary"
+              style={inputStyle}
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Description</label>
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'rgb(107 100 92)' }}>
+              Description
+            </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description..."
+              placeholder="Optional…"
               maxLength={200}
               rows={3}
-              className="w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              style={{ ...inputStyle, resize: 'none' }}
             />
           </div>
 
-          {error && <p className="text-destructive text-sm">{error}</p>}
+          {error && <p className="text-[12px]" style={{ color: 'rgb(248 81 73)' }}>{error}</p>}
 
           <button
             type="submit"
             disabled={loading || !name.trim()}
-            className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
+            className="w-full py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-40"
+            style={{ background: 'rgb(217 119 87)', color: 'rgb(26 25 23)', border: 'none', cursor: loading || !name.trim() ? 'not-allowed' : 'pointer' }}
           >
             {loading ? 'Creating…' : 'Create league'}
           </button>
