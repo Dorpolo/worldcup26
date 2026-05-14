@@ -1,0 +1,93 @@
+services:
+  # ── Infrastructure ───────────────────────────────────────────────────────
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: worldcup26
+    ports:
+      - "27017:27017"
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+
+  # ── Next.js web app ──────────────────────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/worldcup26
+      REDIS_URL: redis://redis:6379
+      MCP_SERVER_URL: http://mcp:4001
+      RAILWAY_AGENT_URL: http://agent:8000
+      NEXTAUTH_URL: http://localhost:3000
+      AUTH_URL: http://localhost:3000
+    depends_on:
+      - mongo
+      - redis
+
+  # ── Express + Socket.io ──────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    env_file: .env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/worldcup26
+      REDIS_URL: redis://redis:6379
+      PORT: "4000"
+      NEXTAUTH_URL: http://web:3000
+    depends_on:
+      - mongo
+      - redis
+
+  # ── MCP server ───────────────────────────────────────────────────────────
+  mcp:
+    build:
+      context: .
+      dockerfile: apps/mcp/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4001:4001"
+    env_file: .env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/worldcup26
+      PORT: "4001"
+      INTERNAL_API_URL: http://web:3000
+    depends_on:
+      - mongo
+
+  # ── Python LangGraph agent ───────────────────────────────────────────────
+  agent:
+    build:
+      context: apps/agent
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/worldcup26
+      INTERNAL_API_URL: http://web:3000
+    depends_on:
+      - mongo
+      - web
+
+volumes:
+  mongo_data:
+  redis_data:
