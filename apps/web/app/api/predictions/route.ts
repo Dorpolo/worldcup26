@@ -13,7 +13,7 @@ const PredictionSchema = z.object({
 })
 
 export async function GET(req: NextRequest) {
-  const { user, error } = await getAuthUser()
+  const { user, error } = await getAuthUser(req)
   if (error) return error
 
   const { searchParams } = new URL(req.url)
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { user, error } = await getAuthUser()
+  const { user, error } = await getAuthUser(req)
   if (error) return error
 
   const userId = String((user as any)._id)

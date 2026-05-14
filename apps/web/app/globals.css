@@ -1,100 +1,208 @@
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Claude/Anthropic Design Tokens ─────────────────────────────────── */
 @layer base {
   :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: 210 40% 98%;
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --radius: 0.625rem;
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
-  }
+    /* Warm dark surfaces */
+    --bg:           26 25 23;    /* #1a1917 */
+    --surface:      36 34 32;    /* #242220 */
+    --surface-2:    46 43 40;    /* #2e2b28 */
+    --surface-3:    58 55 51;    /* #3a3733 */
 
-  .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --destructive-foreground: 210 40% 98%;
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
-  }
-  .theme {
-    --font-heading: var(--font-sans);
-    --font-sans: var(--font-sans);
-  }
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
+    /* Borders (rgb tokens — use with rgb()) */
+    --border-rgb:   255 255 255 / 0.09;
+    --border-focus: 255 255 255 / 0.22;
+
+    /* Text (rgb tokens) */
+    --text-1:       240 235 227;  /* #f0ebe3 warm cream */
+    --text-2:       160 152 144;  /* #a09890 muted */
+    --text-3:       107 100 92;   /* #6b645c very muted */
+
+    /* Coral accent (rgb tokens) */
+    --coral:        217 119 87;   /* #d97757 */
+    --coral-2:      232 149 110;  /* #e8956e lighter */
+    --coral-bg:     217 119 87 / 0.12;
+
+    /* Semantic */
+    --success:      63 185 80;
+    --warning:      240 160 48;
+    --error:        248 81 73;
+
+    /* shadcn compat — HSL format (h s% l%) for hsl(var(--x)) usage */
+    --background:         40 6% 10%;    /* #1a1917 */
+    --foreground:         36 44% 91%;   /* #f0ebe3 */
+    --card:               30 6% 13%;    /* #242220 */
+    --card-foreground:    36 44% 91%;
+    --popover:            30 7% 17%;    /* #2e2b28 */
+    --popover-foreground: 36 44% 91%;
+    --primary:            20 63% 60%;   /* #d97757 coral */
+    --primary-foreground: 40 6% 10%;    /* dark bg on coral */
+    --secondary:          30 7% 17%;
+    --secondary-foreground: 36 44% 91%;
+    --muted:              30 7% 17%;
+    --muted-foreground:   20 5% 60%;    /* #a09890 */
+    --accent:             30 6% 21%;    /* #3a3733 */
+    --accent-foreground:  36 44% 91%;
+    --destructive:        3 92% 63%;    /* #f85149 */
+    --destructive-foreground: 36 44% 91%;
+    --border:             30 6% 21%;
+    --input:              30 6% 21%;
+    --ring:               20 63% 60%;
+    --radius:             0.625rem;
   }
 }
 
+/* ─── Base resets ─────────────────────────────────────────────────────── */
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
+
+  html {
+    color-scheme: dark;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: rgb(var(--bg));
+    color: rgb(var(--text-1));
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Warm scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(255 255 255 / 0.1);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(255 255 255 / 0.18);
+  }
+
+  /* Text selection */
+  ::selection {
+    background: rgb(217 119 87 / 0.35);
+    color: rgb(var(--text-1));
   }
 }
+
+/* ─── Typography utilities ────────────────────────────────────────────── */
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+
+  .font-mono {
+    font-family: var(--font-mono), 'JetBrains Mono', 'Fira Code', monospace;
+    font-feature-settings: "liga" 1, "calt" 1;
+  }
+}
+
+/* ─── Animations ──────────────────────────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50%       { opacity: 1;   transform: scale(1.1); }
+}
+
+@keyframes rank-flash-up {
+  0%   { background-color: rgb(63 185 80 / 0.18); }
+  100% { background-color: transparent; }
+}
+
+@keyframes rank-flash-down {
+  0%   { background-color: rgb(248 81 73 / 0.18); }
+  100% { background-color: transparent; }
+}
+
+@keyframes shimmer {
+  from { background-position: 200% center; }
+  to   { background-position: -200% center; }
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+@layer utilities {
+  .animate-fade-in        { animation: fade-in 0.22s ease both; }
+  .animate-slide-in-right { animation: slide-in-right 0.22s ease both; }
+  .animate-slide-in-left  { animation: slide-in-left 0.22s ease both; }
+  .animate-rank-up        { animation: rank-flash-up 2s ease forwards; }
+  .animate-rank-down      { animation: rank-flash-down 2s ease forwards; }
+  .animate-cursor         { animation: cursor-blink 1s step-start infinite; }
+
+  .animate-pulse-dot-1 { animation: pulse-dot 1.4s ease-in-out infinite; animation-delay: 0ms; }
+  .animate-pulse-dot-2 { animation: pulse-dot 1.4s ease-in-out infinite; animation-delay: 200ms; }
+  .animate-pulse-dot-3 { animation: pulse-dot 1.4s ease-in-out infinite; animation-delay: 400ms; }
+}
+
+/* ─── Chat panel transition ───────────────────────────────────────────── */
+.chat-panel-enter {
+  animation: slide-in-right 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Gradient glow backgrounds ──────────────────────────────────────── */
+.glow-accent {
+  background: radial-gradient(ellipse at 50% 0%, rgb(217 119 87 / 0.12) 0%, transparent 65%);
+}
+
+/* ─── Table in markdown ───────────────────────────────────────────────── */
+.prose-chat table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  margin: 0.5rem 0;
+}
+.prose-chat th,
+.prose-chat td {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  text-align: left;
+}
+.prose-chat th {
+  background: rgb(255 255 255 / 0.05);
+  font-weight: 600;
+  color: rgb(var(--text-2));
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  letter-spacing: 0.05em;
+}
+.prose-chat tr:nth-child(even) td {
+  background: rgb(255 255 255 / 0.02);
+}
+.prose-chat code {
+  background: rgb(255 255 255 / 0.08);
+  padding: 0.15em 0.45em;
+  border-radius: 4px;
+  font-size: 0.8125em;
+  font-family: var(--font-mono), monospace;
+}
+.prose-chat strong { color: rgb(var(--text-1)); font-weight: 600; }
+.prose-chat em     { color: rgb(var(--text-2)); }
+.prose-chat hr     { border-color: rgb(255 255 255 / 0.1); margin: 0.75rem 0; }

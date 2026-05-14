@@ -1,52 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-helpers'
 import { connectDB, MembershipModel } from '@worldcup26/db'
-import { getLeaderboardFromCache, setLeaderboardInCache } from '@/lib/redis'
+import { setLeaderboardInCache } from '@/lib/redis'
 
-interface Params {
-  params: { leagueId: string }
-}
+interface Params { params: { leagueId: string } }
 
-export async function GET(_req: NextRequest, { params }: Params) {
-  const { user, error } = await getAuthUser()
+export async function GET(req: NextRequest, { params }: Params) {
+  const { user, error } = await getAuthUser(req)
   if (error) return error
 
   await connectDB()
 
-  // Try Redis cache first
-  const cached = await getLeaderboardFromCache(params.leagueId)
-  if (cached && cached.length > 0) {
-    // Redis returns [member, score, member, score, ...] with withScores
-    // Reconstruct leaderboard entries from cache
-    const entries: Array<{ userId: string; points: number }> = []
-    for (let i = 0; i < cached.length; i += 2) {
-      entries.push({ userId: cached[i] as string, points: Number(cached[i + 1]) })
-    }
-    return NextResponse.json({ ok: true, data: entries, source: 'cache' })
+  if (!(user as any).isInternal) {
+    const membership = await MembershipModel.findOne({
+      leagueId: params.leagueId,
+      userId: (user as any)._id,
+    }).lean()
+    if (!membership) return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 })
   }
 
-  // Fallback to DB
   const memberships = await MembershipModel.find({ leagueId: params.leagueId })
     .populate('userId', 'name avatar')
     .sort({ totalPoints: -1 })
-    .lean()
+    .lean() as any[]
 
-  const leaderboard = memberships.map((m, i) => {
-    const member = m.userId as any
-    return {
-      rank: i + 1,
-      userId: String(member._id),
-      name: member.name,
-      avatar: member.avatar,
-      totalPoints: m.totalPoints,
-    }
-  })
+  const currentUserId = String((user as any)._id)
 
-  // Rebuild cache
-  await setLeaderboardInCache(
+  const leaderboard = memberships.map((m: any, i: number) => ({
+    rank: i + 1,
+    userId: String(m.userId._id),
+    name: m.userId.name,
+    avatar: m.userId.avatar,
+    totalPoints: m.totalPoints,
+    role: m.role,
+    isMe: String(m.userId._id) === currentUserId,
+  }))
+
+  // Rebuild cache in background (don't await — don't block the response)
+  setLeaderboardInCache(
     params.leagueId,
     leaderboard.map((e) => ({ userId: e.userId, points: e.totalPoints }))
-  )
+  ).catch(() => {})
 
-  return NextResponse.json({ ok: true, data: leaderboard, source: 'db' })
+  return NextResponse.json({ ok: true, data: leaderboard })
 }

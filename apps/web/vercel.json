@@ -20,6 +20,13 @@
       "headers": {
         "x-cron-secret": "@cron_secret"
       }
+    },
+    {
+      "path": "/api/cron/cup-advance",
+      "schedule": "*/15 * * * *",
+      "headers": {
+        "x-cron-secret": "@cron_secret"
+      }
     }
   ]
 }

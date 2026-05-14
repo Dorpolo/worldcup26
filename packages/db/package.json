@@ -8,14 +8,17 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "seed:fixtures": "MONGODB_URI=mongodb://localhost:27018/worldcup26 npx tsx seed/wc2026-fixtures.ts"
   },
   "dependencies": {
     "@worldcup26/types": "workspace:*",
     "mongoose": "^8.4.0"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "date-fns": "^3.6.0",
+    "tsx": "^4.11.0",
+    "typescript": "^5.4.0"
   }
 }

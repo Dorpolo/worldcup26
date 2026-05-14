@@ -19,10 +19,21 @@ export async function POST(req: NextRequest) {
 
   const agentUrl = process.env.RAILWAY_AGENT_URL
   if (!agentUrl) {
-    return NextResponse.json({ ok: false, error: 'AI agent not configured' }, { status: 503 })
+    // Dev fallback: echo a static response as SSE
+    const stream = new ReadableStream({
+      start(controller) {
+        const enc = new TextEncoder()
+        const msg = "The AI agent isn't configured yet (`RAILWAY_AGENT_URL` is missing). Set it up to enable chat."
+        controller.enqueue(enc.encode(`data: ${JSON.stringify({ type: 'token', content: msg })}\n\n`))
+        controller.enqueue(enc.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`))
+        controller.close()
+      },
+    })
+    return new NextResponse(stream, {
+      headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
+    })
   }
 
-  // Forward to Python LangGraph agent with streaming
   const agentRes = await fetch(`${agentUrl}/chat`, {
     method: 'POST',
     headers: {
@@ -34,13 +45,22 @@ export async function POST(req: NextRequest) {
       league_id: parsed.data.leagueId,
       message: parsed.data.message,
     }),
-  })
+  }).catch(() => null)
 
-  if (!agentRes.ok) {
-    return NextResponse.json({ ok: false, error: 'Agent error' }, { status: 502 })
+  if (!agentRes?.ok) {
+    const stream = new ReadableStream({
+      start(controller) {
+        const enc = new TextEncoder()
+        controller.enqueue(enc.encode(`data: ${JSON.stringify({ type: 'error', content: 'Agent unavailable. Try again later.' })}\n\n`))
+        controller.enqueue(enc.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`))
+        controller.close()
+      },
+    })
+    return new NextResponse(stream, {
+      headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
+    })
   }
 
-  // Stream the response back
   return new NextResponse(agentRes.body, {
     headers: {
       'Content-Type': 'text/event-stream',
