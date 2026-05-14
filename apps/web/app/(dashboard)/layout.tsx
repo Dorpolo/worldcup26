@@ -11,7 +11,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   await connectDB()
   const user = await UserModel.findOne({ email: session.user.email }).lean() as any
-  if (!user) redirect('/login')
+  // User not in DB but has a valid JWT (e.g. stale cookie from another env).
+  // Sign them out to clear the cookie and avoid a redirect loop.
+  if (!user) redirect('/api/auth/signout?callbackUrl=/login')
 
   const memberships = await MembershipModel.find({ userId: user._id })
     .populate('leagueId', 'name slug avatar')

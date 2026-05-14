@@ -9,7 +9,7 @@ export default async function ProfilePage() {
 
   await connectDB()
   const user = await UserModel.findOne({ email: session.user.email }).lean() as any
-  if (!user) redirect('/login')
+  if (!user) redirect('/api/auth/signout?callbackUrl=/login')
 
   const mcpUrl = process.env.MCP_SERVER_URL ?? 'http://localhost:4001'
 
