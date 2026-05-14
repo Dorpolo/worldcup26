@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-helpers'
 import { connectDB, MembershipModel, CupBracketModel, UserModel } from '@worldcup26/db'
 import { getCupConfig, buildCupMatchups } from '@worldcup26/config'
-import { nanoid } from 'nanoid'
 
 interface Params { params: { leagueId: string } }
 
@@ -50,14 +49,12 @@ export async function POST(_req: NextRequest, { params }: Params) {
       {
         roundNumber: 1,
         roundName: formatRoundName(startRound),
-        worldCupStage: startRound,
+        worldCupStage: cupRoundToMatchStage(startRound),
         status: 'active',
         matchups: matchupPairs.map((pair) => ({
-          _id: nanoid(),
+          // omit _id — Mongoose auto-generates ObjectId
           homeUserId: pair.homeUserId,
           awayUserId: pair.awayUserId,
-          homeUserName: userMap.get(pair.homeUserId) ?? 'Unknown',
-          awayUserName: pair.awayUserId ? (userMap.get(pair.awayUserId) ?? 'Unknown') : null,
           homePoints: 0,
           awayPoints: 0,
           winnerId: pair.awayUserId === null ? pair.homeUserId : undefined,
@@ -68,6 +65,17 @@ export async function POST(_req: NextRequest, { params }: Params) {
   })
 
   return NextResponse.json({ ok: true, data: bracket }, { status: 201 })
+}
+
+function cupRoundToMatchStage(round: string): string {
+  const map: Record<string, string> = {
+    round_of_32: 'round_of_16',
+    round_of_16: 'round_of_16',
+    quarter_final: 'quarter_final',
+    semi_final: 'semi_final',
+    final: 'final',
+  }
+  return map[round] ?? round
 }
 
 function formatRoundName(round: string): string {
