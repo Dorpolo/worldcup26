@@ -5,7 +5,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI, Depends
+# LangSmith tracing — set LANGCHAIN_API_KEY + LANGCHAIN_TRACING_V2=true to enable
+if os.getenv("LANGCHAIN_API_KEY"):
+    os.environ.setdefault("LANGCHAIN_TRACING_V2", "true")
+    os.environ.setdefault("LANGCHAIN_PROJECT", os.getenv("LANGCHAIN_PROJECT", "worldcup26"))
+
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -37,17 +42,21 @@ def health():
 
 
 @app.post("/chat")
-async def chat(body: ChatRequest, _token: str = Depends(verify_token)):
+async def chat(request: Request, body: ChatRequest, _token: str = Depends(verify_token)):
     # Load conversation history
     history = await load_history(body.user_id, body.league_id)
 
     # Persist the user message
     await save_message(body.user_id, body.league_id, "user", body.message)
 
+    # Optional per-user API key passed by the Next.js proxy
+    user_ai_key = request.headers.get("x-user-ai-key", "")
+
     initial_state = {
         "messages": history + [HumanMessage(content=body.message)],
         "user_id": body.user_id,
         "league_id": body.league_id,
+        "ai_api_key": user_ai_key,
     }
 
     async def event_stream():

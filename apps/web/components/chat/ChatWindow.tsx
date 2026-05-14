@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { MessageBubble } from './MessageBubble'
 import { ChatInput } from './ChatInput'
 import { TypingIndicator } from './TypingIndicator'
+import type { Mention } from '@/lib/mention-types'
 
 export interface Message {
   id: string
@@ -39,10 +40,15 @@ export function ChatWindow({
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, toolActivity])
 
-  const sendMessage = useCallback(async (text: string) => {
-    if (!text.trim() || isLoading) return
+  const sendMessage = useCallback(async (text: string, mentions: Mention[] = []) => {
+    if (!text.trim() && mentions.length === 0) return
+    if (isLoading) return
 
-    const userMsg: Message = { id: crypto.randomUUID(), role: 'user', content: text }
+    const displayText = mentions.length > 0 && !text.trim()
+      ? `Tell me about ${mentions.map((m) => m.label).join(' and ')}`
+      : text
+
+    const userMsg: Message = { id: crypto.randomUUID(), role: 'user', content: displayText }
     setMessages((prev) => [...prev, userMsg])
     setIsLoading(true)
     setToolActivity(null)
@@ -59,7 +65,7 @@ export function ChatWindow({
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, leagueId }),
+        body: JSON.stringify({ message: displayText, leagueId, mentions }),
         signal: abortRef.current.signal,
       })
 
@@ -156,7 +162,7 @@ export function ChatWindow({
 
       {/* Input */}
       <div className="shrink-0 px-3 pb-4 pt-2" style={{ borderTop: '1px solid rgb(255 255 255 / 0.06)' }}>
-        <ChatInput onSend={sendMessage} disabled={isLoading} />
+        <ChatInput onSend={(msg, mentions) => sendMessage(msg, mentions)} disabled={isLoading} />
       </div>
     </div>
   )

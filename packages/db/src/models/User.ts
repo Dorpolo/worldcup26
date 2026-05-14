@@ -8,6 +8,7 @@ export interface UserDocument extends Document {
   authProvider: 'email' | 'google'
   googleId?: string
   apiKey: string
+  aiApiKey?: string  // user-supplied Claude/OpenAI key for chat
   createdAt: Date
   updatedAt: Date
 }
@@ -21,6 +22,7 @@ const UserSchema = new Schema<UserDocument>(
     authProvider: { type: String, enum: ['email', 'google'], required: true },
     googleId: { type: String },
     apiKey: { type: String, required: true }, // stored as-is, generated with nanoid(32)
+    aiApiKey: { type: String, default: '' },  // user-supplied Claude/OpenAI API key
   },
   { timestamps: true }
 )

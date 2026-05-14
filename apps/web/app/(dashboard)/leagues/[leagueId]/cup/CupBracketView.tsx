@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { MENTION_DRAG_KEY } from '@/lib/mention-types'
 
 interface Matchup {
   _id: string
@@ -36,10 +37,11 @@ interface Props {
   currentUserId: string
   isOwner: boolean
   leagueId: string
+  leagueSlug: string
   memberCount: number
 }
 
-export function CupBracketView({ bracket, userMap, currentUserId, isOwner, leagueId, memberCount }: Props) {
+export function CupBracketView({ bracket, userMap, currentUserId, isOwner, leagueId, leagueSlug, memberCount }: Props) {
   const [isPending, startTransition] = useTransition()
   const [isAdvancing, startAdvanceTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -176,6 +178,8 @@ export function CupBracketView({ bracket, userMap, currentUserId, isOwner, leagu
                 matchup={matchup}
                 getDisplayName={getDisplayName}
                 isMe={isMe}
+                userMap={userMap}
+                leagueSlug={leagueSlug}
               />
             ))}
           </div>
@@ -197,13 +201,13 @@ export function CupBracketView({ bracket, userMap, currentUserId, isOwner, leagu
 }
 
 function MatchupCard({
-  matchup,
-  getDisplayName,
-  isMe,
+  matchup, getDisplayName, isMe, userMap, leagueSlug,
 }: {
   matchup: Matchup
   getDisplayName: (id: string | null, fallback?: string | null) => string
   isMe: (id: string | null) => boolean
+  userMap: Record<string, { name: string; avatar?: string }>
+  leagueSlug: string
 }) {
   const homeName = matchup.homeUserName ?? getDisplayName(matchup.homeUserId)
   const awayName = matchup.isBye ? 'BYE' : (matchup.awayUserName ?? getDisplayName(matchup.awayUserId))
@@ -212,29 +216,39 @@ function MatchupCard({
   const awayWon = matchup.winnerId && !matchup.isBye && String(matchup.winnerId) === String(matchup.awayUserId)
   const decided = !!matchup.winnerId
 
-  const rowStyle = (won: boolean | string | undefined, me: boolean) => ({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  function dragUser(userId: string | null, name: string) {
+    if (!userId) return {}
+    return {
+      draggable: true as const,
+      onDragStart: (e: React.DragEvent) => {
+        e.stopPropagation()
+        e.dataTransfer.setData(MENTION_DRAG_KEY, JSON.stringify({ type: 'user', id: userId, label: name, meta: {} }))
+        e.dataTransfer.effectAllowed = 'copy'
+      },
+      onClick: (e: React.MouseEvent) => {
+        e.stopPropagation()
+        window.location.href = `/leagues/${leagueSlug}/predictions?userId=${userId}`
+      },
+      title: `Click → predictions · Drag → AI chat`,
+      style: { cursor: 'grab' } as React.CSSProperties,
+    }
+  }
+
+  const rowBase = (won: boolean | string | undefined) => ({
+    display: 'flex' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
     padding: '10px 12px',
     background: won ? 'rgb(63 185 80 / 0.08)' : 'transparent',
     borderLeft: won ? '2px solid rgb(63 185 80)' : '2px solid transparent',
-    opacity: matchup.isBye && !won ? 0.4 : 1,
   })
 
   return (
-    <div
-      className="overflow-hidden"
-      style={{
-        background: 'rgb(36 34 32)',
-        border: '1px solid rgb(255 255 255 / 0.07)',
-        borderRadius: '12px',
-      }}
-    >
-      <div style={rowStyle(homeWon, isMe(matchup.homeUserId))}>
-        <div className="flex items-center gap-1.5 min-w-0">
+    <div className="overflow-hidden" style={{ background: 'rgb(36 34 32)', border: '1px solid rgb(255 255 255 / 0.07)', borderRadius: '12px' }}>
+      <div style={{ ...rowBase(homeWon), opacity: matchup.isBye ? 0.4 : 1 }}>
+        <div className="flex items-center gap-1.5 min-w-0 flex-1 group/player" {...dragUser(matchup.homeUserId, homeName)}>
           <PlayerAvatar name={homeName} />
-          <span className="text-[12px] truncate" style={{ color: isMe(matchup.homeUserId) ? 'rgb(217 119 87)' : 'rgb(240 235 227)', fontWeight: isMe(matchup.homeUserId) ? 600 : 400 }}>
+          <span className="text-[12px] truncate group-hover/player:underline underline-offset-2" style={{ color: isMe(matchup.homeUserId) ? 'rgb(217 119 87)' : 'rgb(240 235 227)', fontWeight: isMe(matchup.homeUserId) ? 600 : 400 }}>
             {homeName}
           </span>
         </div>
@@ -245,14 +259,14 @@ function MatchupCard({
 
       <div style={{ height: '1px', background: 'rgb(255 255 255 / 0.05)' }} />
 
-      <div style={rowStyle(awayWon, isMe(matchup.awayUserId))}>
-        <div className="flex items-center gap-1.5 min-w-0">
+      <div style={rowBase(awayWon)}>
+        <div className="flex items-center gap-1.5 min-w-0 flex-1 group/player" {...(matchup.isBye ? {} : dragUser(matchup.awayUserId, awayName))}>
           {matchup.isBye ? (
             <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: 'rgb(255 255 255 / 0.05)', color: 'rgb(107 100 92)' }}>–</span>
           ) : (
             <PlayerAvatar name={awayName} />
           )}
-          <span className="text-[12px] truncate" style={{ color: isMe(matchup.awayUserId) ? 'rgb(217 119 87)' : 'rgb(240 235 227)', fontWeight: isMe(matchup.awayUserId) ? 600 : 400 }}>
+          <span className={`text-[12px] truncate ${!matchup.isBye ? 'group-hover/player:underline underline-offset-2' : ''}`} style={{ color: matchup.isBye ? 'rgb(58 55 51)' : isMe(matchup.awayUserId) ? 'rgb(217 119 87)' : 'rgb(240 235 227)', fontWeight: isMe(matchup.awayUserId) ? 600 : 400 }}>
             {awayName}
           </span>
         </div>

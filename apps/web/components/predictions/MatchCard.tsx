@@ -3,6 +3,8 @@
 import { useState, useTransition } from 'react'
 import { useMatchCountdown } from '@/hooks/useMatchCountdown'
 import { useLiveMatch } from '@/hooks/useLiveMatch'
+import { useDraggable } from '@/hooks/useDraggable'
+import { MatchDistributionModal } from './MatchDistributionModal'
 import { toast } from 'sonner'
 
 interface TeamInfo { name: string; shortName: string; flag?: string }
@@ -12,6 +14,7 @@ interface Prediction { homeScore: number; awayScore: number; pointsEarned?: numb
 interface Props {
   matchId: string
   leagueId: string
+  leagueSlug?: string
   homeTeam: TeamInfo | any
   awayTeam: TeamInfo | any
   kickoffAt: string
@@ -22,11 +25,12 @@ interface Props {
   group?: string
 }
 
-export function MatchCard({ matchId, leagueId, homeTeam, awayTeam, kickoffAt, lockAt, status, result, prediction, group }: Props) {
+export function MatchCard({ matchId, leagueId, leagueSlug, homeTeam, awayTeam, kickoffAt, lockAt, status, result, prediction, group }: Props) {
   const [homeScore, setHomeScore] = useState<string>(prediction?.homeScore != null ? String(prediction.homeScore) : '')
   const [awayScore, setAwayScore] = useState<string>(prediction?.awayScore != null ? String(prediction.awayScore) : '')
   const [saved, setSaved] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [showDistribution, setShowDistribution] = useState(false)
 
   const isFinished = status === 'finished'
   const countdown = useMatchCountdown(lockAt)
@@ -48,6 +52,13 @@ export function MatchCard({ matchId, leagueId, homeTeam, awayTeam, kickoffAt, lo
   const awayFullName = typeof awayTeam === 'object' ? awayTeam.name : String(awayTeam)
 
   const hasPrediction = prediction?.homeScore != null
+
+  const draggable = useDraggable({
+    type: 'match',
+    id: matchId,
+    label: `${homeName} vs ${awayName}`,
+    meta: { home: homeFullName, away: awayFullName, status, matchId },
+  })
 
   function handleSubmit() {
     const h = parseInt(homeScore, 10)
@@ -74,8 +85,18 @@ export function MatchCard({ matchId, leagueId, homeTeam, awayTeam, kickoffAt, lo
   }
 
   return (
+    <>
+    {showDistribution && leagueSlug && (
+      <MatchDistributionModal
+        matchId={matchId}
+        leagueSlug={leagueSlug}
+        leagueMongoId={leagueId}
+        onClose={() => setShowDistribution(false)}
+      />
+    )}
     <div
-      className="rounded-xl p-3.5 flex flex-col gap-3 transition-all duration-150"
+      {...draggable}
+      className="rounded-xl p-3.5 flex flex-col gap-3 transition-all duration-150 cursor-grab active:cursor-grabbing"
       style={{
         background: isFinished ? 'rgb(255 255 255 / 0.02)' : 'rgb(255 255 255 / 0.04)',
         border: hasPrediction && !isFinished
@@ -139,32 +160,47 @@ export function MatchCard({ matchId, leagueId, homeTeam, awayTeam, kickoffAt, lo
           )}
         </div>
 
-        {/* Points or save button */}
-        {isFinished && prediction?.pointsEarned != null ? (
-          <span
-            className="text-[12px] font-bold font-mono px-2 py-0.5 rounded-full"
-            style={prediction.pointsEarned > 0
-              ? { background: 'rgb(63 185 80 / 0.15)', color: 'rgb(63 185 80)' }
-              : { background: 'rgb(255 255 255 / 0.05)', color: 'rgb(107 100 92)' }
-            }
-          >
-            {prediction.pointsEarned > 0 ? `+${prediction.pointsEarned} pts` : '0 pts'}
-          </span>
-        ) : !effectiveLocked && !isFinished ? (
-          <button
-            onClick={handleSubmit}
-            disabled={isPending || homeScore === '' || awayScore === ''}
-            className="text-[11px] px-3 py-1 rounded-lg font-semibold transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed"
-            style={saved
-              ? { background: 'rgb(63 185 80 / 0.15)', color: 'rgb(63 185 80)' }
-              : { background: 'rgb(217 119 87)', color: 'rgb(26 25 23)' }
-            }
-          >
-            {isPending ? '…' : saved ? '✓ Saved' : hasPrediction ? 'Update' : 'Predict'}
-          </button>
-        ) : null}
+        <div className="flex items-center gap-2">
+          {/* Distribution button — shown when locked or finished */}
+          {leagueSlug && (effectiveLocked || isFinished) && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowDistribution(true) }}
+              className="text-[10px] px-2 py-0.5 rounded-full transition-colors"
+              style={{ color: 'rgb(107 100 92)', background: 'rgb(255 255 255 / 0.05)', border: '1px solid rgb(255 255 255 / 0.08)' }}
+              title="View all predictions"
+            >
+              👁 All picks
+            </button>
+          )}
+
+          {/* Points or save button */}
+          {isFinished && prediction?.pointsEarned != null ? (
+            <span
+              className="text-[12px] font-bold font-mono px-2 py-0.5 rounded-full"
+              style={prediction.pointsEarned > 0
+                ? { background: 'rgb(63 185 80 / 0.15)', color: 'rgb(63 185 80)' }
+                : { background: 'rgb(255 255 255 / 0.05)', color: 'rgb(107 100 92)' }
+              }
+            >
+              {prediction.pointsEarned > 0 ? `+${prediction.pointsEarned} pts` : '0 pts'}
+            </span>
+          ) : !effectiveLocked && !isFinished ? (
+            <button
+              onClick={handleSubmit}
+              disabled={isPending || homeScore === '' || awayScore === ''}
+              className="text-[11px] px-3 py-1 rounded-lg font-semibold transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed"
+              style={saved
+                ? { background: 'rgb(63 185 80 / 0.15)', color: 'rgb(63 185 80)' }
+                : { background: 'rgb(217 119 87)', color: 'rgb(26 25 23)' }
+              }
+            >
+              {isPending ? '…' : saved ? '✓ Saved' : hasPrediction ? 'Update' : 'Predict'}
+            </button>
+          ) : null}
+        </div>
       </div>
     </div>
+    </>
   )
 }
 

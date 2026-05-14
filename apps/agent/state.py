@@ -8,3 +8,4 @@ class AgentState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     user_id: str
     league_id: str
+    ai_api_key: str  # optional user-supplied key; empty string = use env default

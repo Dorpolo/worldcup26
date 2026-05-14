@@ -5,6 +5,7 @@ import { MatchCard } from '@/components/predictions/MatchCard'
 
 interface Props {
   params: { leagueId: string }
+  searchParams: { userId?: string }
 }
 
 const STAGE_LABELS: Record<string, string> = {
@@ -18,7 +19,7 @@ const STAGE_LABELS: Record<string, string> = {
 
 const STAGE_ORDER = ['group', 'round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final']
 
-export default async function PredictionsPage({ params }: Props) {
+export default async function PredictionsPage({ params, searchParams }: Props) {
   const session = await auth()
   if (!session?.user?.email) redirect('/login')
 
@@ -33,9 +34,23 @@ export default async function PredictionsPage({ params }: Props) {
   const membership = await MembershipModel.findOne({ userId: user._id, leagueId: league._id }).lean() as any
   if (!membership) redirect('/leagues')
 
+  // Support viewing another member's predictions via ?userId=
+  const viewingUserId = searchParams.userId ?? String(user._id)
+  const isViewingOther = viewingUserId !== String(user._id)
+
+  // Verify the viewed user is actually a member
+  let viewingUser = user
+  if (isViewingOther) {
+    const viewedMembership = await MembershipModel.findOne({
+      userId: viewingUserId,
+      leagueId: league._id,
+    }).populate('userId', 'name avatar').lean() as any
+    if (viewedMembership) viewingUser = viewedMembership.userId
+  }
+
   const [matches, predictions] = await Promise.all([
     MatchModel.find({}).sort({ kickoffAt: 1 }).lean(),
-    PredictionModel.find({ userId: user._id, leagueId: league._id }).lean(),
+    PredictionModel.find({ userId: viewingUserId, leagueId: league._id }).lean(),
   ])
 
   const predMap = new Map(predictions.map((p) => [String(p.matchId), p]))
@@ -68,6 +83,33 @@ export default async function PredictionsPage({ params }: Props) {
   return (
     <div className="h-full overflow-y-auto p-5">
       <div className="max-w-3xl mx-auto space-y-6">
+
+        {/* Viewing another user banner */}
+        {isViewingOther && (
+          <div
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-[12px]"
+            style={{ background: 'rgb(217 119 87 / 0.08)', border: '1px solid rgb(217 119 87 / 0.2)' }}
+          >
+            <div
+              className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 overflow-hidden"
+              style={{ background: 'rgb(217 119 87 / 0.2)', color: 'rgb(217 119 87)' }}
+            >
+              {viewingUser?.avatar
+                ? <img src={viewingUser.avatar} alt="" className="w-full h-full object-cover" />
+                : viewingUser?.name?.charAt(0)}
+            </div>
+            <span style={{ color: 'rgb(217 119 87)' }}>
+              Viewing {viewingUser?.name ?? 'member'}'s predictions
+            </span>
+            <a
+              href={`/leagues/${params.leagueId}/predictions`}
+              className="ml-auto text-[11px] underline"
+              style={{ color: 'rgb(107 100 92)' }}
+            >
+              View mine
+            </a>
+          </div>
+        )}
 
         {/* Progress bar */}
         {total > 0 && (
@@ -123,6 +165,7 @@ export default async function PredictionsPage({ params }: Props) {
                             key={String(match._id)}
                             matchId={String(match._id)}
                             leagueId={String(league._id)}
+                            leagueSlug={params.leagueId}
                             homeTeam={match.homeTeam}
                             awayTeam={match.awayTeam}
                             kickoffAt={match.kickoffAt.toISOString()}

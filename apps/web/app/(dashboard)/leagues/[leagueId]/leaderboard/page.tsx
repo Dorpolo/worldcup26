@@ -34,6 +34,7 @@ export default async function LeaderboardPage({ params }: Props) {
   return (
     <LeaderboardClient
       leagueId={String(league._id)}
+      leagueSlug={params.leagueId}
       initial={initial}
     />
   )

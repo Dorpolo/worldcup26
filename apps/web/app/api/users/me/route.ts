@@ -6,6 +6,7 @@ import { connectDB, UserModel } from '@worldcup26/db'
 const UpdateSchema = z.object({
   name: z.string().min(1).max(80).optional(),
   timezone: z.string().optional(),
+  aiApiKey: z.string().max(200).optional(),
 })
 
 export async function GET() {

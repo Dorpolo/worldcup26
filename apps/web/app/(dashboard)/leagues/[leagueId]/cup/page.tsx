@@ -49,6 +49,7 @@ export default async function CupPage({ params }: Props) {
           currentUserId={String(user._id)}
           isOwner={isOwner}
           leagueId={String(league._id)}
+          leagueSlug={params.leagueId}
           memberCount={members.length}
         />
       </div>

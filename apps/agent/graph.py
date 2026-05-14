@@ -1,6 +1,7 @@
 """
 LangGraph ReAct agent graph.
 Uses a single agent node with all tools — Claude handles routing naturally.
+Per-request API key override is supported via state["ai_api_key"].
 """
 import os
 from pathlib import Path
@@ -13,15 +14,20 @@ from state import AgentState
 from tools import ALL_TOOLS
 
 MODEL = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
+DEFAULT_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 SYSTEM_PROMPT_PATH = Path(__file__).parent / "prompts" / "system.txt"
 SYSTEM_PROMPT_TEMPLATE = SYSTEM_PROMPT_PATH.read_text()
 
 
 def build_graph() -> StateGraph:
-    llm = ChatAnthropic(model=MODEL, streaming=True)
-    llm_with_tools = llm.bind_tools(ALL_TOOLS)
+    tool_node = ToolNode(ALL_TOOLS)
 
     def agent_node(state: AgentState):
+        # Use user-supplied key if provided, otherwise fall back to env default
+        api_key = state.get("ai_api_key") or DEFAULT_API_KEY
+        llm = ChatAnthropic(model=MODEL, streaming=True, api_key=api_key)
+        llm_with_tools = llm.bind_tools(ALL_TOOLS)
+
         system = SystemMessage(
             content=SYSTEM_PROMPT_TEMPLATE.format(
                 user_id=state["user_id"],
@@ -30,8 +36,6 @@ def build_graph() -> StateGraph:
         )
         response = llm_with_tools.invoke([system] + state["messages"])
         return {"messages": [response]}
-
-    tool_node = ToolNode(ALL_TOOLS)
 
     graph = StateGraph(AgentState)
     graph.add_node("agent", agent_node)

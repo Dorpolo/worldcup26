@@ -7,13 +7,35 @@ interface Props {
   name: string
   email: string
   apiKey: string
+  aiApiKey: string
   mcpUrl: string
 }
 
-export function ProfileClient({ name, email, apiKey, mcpUrl }: Props) {
+export function ProfileClient({ name, email, apiKey, aiApiKey, mcpUrl }: Props) {
   const [showKey, setShowKey] = useState(false)
   const [copiedKey, setCopiedKey] = useState(false)
   const [copiedConfig, setCopiedConfig] = useState(false)
+  const [aiKey, setAiKey] = useState(aiApiKey)
+  const [showAiKey, setShowAiKey] = useState(false)
+  const [savingAiKey, setSavingAiKey] = useState(false)
+
+  async function saveAiKey() {
+    setSavingAiKey(true)
+    try {
+      const res = await fetch('/api/users/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ aiApiKey: aiKey }),
+      })
+      if (res.ok) {
+        toast.success('API key saved')
+      } else {
+        toast.error('Failed to save')
+      }
+    } finally {
+      setSavingAiKey(false)
+    }
+  }
 
   const maskedKey = apiKey.slice(0, 8) + '•'.repeat(apiKey.length - 8)
 
@@ -107,6 +129,58 @@ export function ProfileClient({ name, email, apiKey, mcpUrl }: Props) {
               }
             >
               {copiedKey ? '✓' : 'Copy'}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* AI API Key */}
+      <section style={cardStyle}>
+        <div className="space-y-3">
+          <div>
+            <p className="text-[13px] font-semibold mb-0.5" style={{ color: 'rgb(240 235 227)' }}>Chat API Key</p>
+            <p className="text-[11px]" style={{ color: 'rgb(107 100 92)' }}>
+              Optionally provide your own Claude or OpenAI API key. The AI chat will use it instead of the shared key — useful for higher rate limits.
+            </p>
+          </div>
+
+          <div
+            className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
+            style={{ background: 'rgb(255 255 255 / 0.04)', border: '1px solid rgb(255 255 255 / 0.08)' }}
+          >
+            <input
+              type={showAiKey ? 'text' : 'password'}
+              value={aiKey}
+              onChange={(e) => setAiKey(e.target.value)}
+              placeholder="sk-ant-... or sk-..."
+              className="flex-1 text-[11px] font-mono bg-transparent outline-none"
+              style={{ color: 'rgb(217 119 87)' }}
+            />
+            <button
+              onClick={() => setShowAiKey((v) => !v)}
+              className="text-[10px] shrink-0"
+              style={{ color: 'rgb(107 100 92)', background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              {showAiKey ? 'Hide' : 'Show'}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <p className="text-[10px]" style={{ color: 'rgb(58 55 51)' }}>
+              Supports keys starting with <code style={{ color: 'rgb(107 100 92)' }}>sk-ant-</code> (Claude) or <code style={{ color: 'rgb(107 100 92)' }}>sk-</code> (OpenAI)
+            </p>
+            <button
+              onClick={saveAiKey}
+              disabled={savingAiKey}
+              className="text-[11px] px-3 py-1.5 rounded-lg transition-all shrink-0"
+              style={{
+                background: savingAiKey ? 'rgb(255 255 255 / 0.05)' : 'rgb(217 119 87 / 0.12)',
+                color: savingAiKey ? 'rgb(107 100 92)' : 'rgb(217 119 87)',
+                border: 'none',
+                cursor: savingAiKey ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {savingAiKey ? 'Saving…' : 'Save'}
             </button>
           </div>
         </div>

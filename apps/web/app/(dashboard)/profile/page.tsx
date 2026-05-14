@@ -25,6 +25,7 @@ export default async function ProfilePage() {
           name={user.name}
           email={user.email}
           apiKey={user.apiKey}
+          aiApiKey={user.aiApiKey ?? ''}
           mcpUrl={mcpUrl}
         />
       </div>

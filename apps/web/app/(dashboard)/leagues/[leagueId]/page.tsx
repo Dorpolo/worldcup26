@@ -2,6 +2,7 @@ import { auth } from '@/auth'
 import { redirect, notFound } from 'next/navigation'
 import { connectDB, UserModel, LeagueModel, MembershipModel, MatchModel } from '@worldcup26/db'
 import Link from 'next/link'
+import { OverviewContextCards } from './OverviewContextCards'
 
 interface Props { params: { leagueId: string } }
 
@@ -29,9 +30,9 @@ export default async function LeagueOverviewPage({ params }: Props) {
     .populate('userId', 'name avatar')
     .lean() as any[]
 
-  const upcoming = await MatchModel.find({ status: { $in: ['scheduled', 'locked'] } })
-    .sort({ kickoffAt: 1 })
-    .limit(3)
+  const upcoming = await MatchModel.find({ status: { $in: ['scheduled', 'locked', 'finished'] } })
+    .sort({ kickoffAt: -1 })
+    .limit(5)
     .lean() as any[]
 
   const base = `/leagues/${params.leagueId}`
@@ -58,79 +59,27 @@ export default async function LeagueOverviewPage({ params }: Props) {
         ))}
       </div>
 
-      {/* Mini leaderboard */}
-      <div className="rounded-xl overflow-hidden"
-        style={{ border: '1px solid rgb(255 255 255 / 0.07)' }}>
-        <div className="flex items-center justify-between px-4 py-3"
-          style={{ borderBottom: '1px solid rgb(255 255 255 / 0.07)' }}>
-          <p className="text-[11px] font-semibold uppercase tracking-widest"
-            style={{ color: 'rgb(107 100 92)' }}>Standings</p>
-          <Link href={`${base}/leaderboard`} className="text-[11px]"
-            style={{ color: 'rgb(217 119 87)' }}>View all →</Link>
-        </div>
-        {top5.map((m: any, i: number) => {
-          const isMe = String(m.userId._id) === String(user._id)
-          return (
-            <div key={String(m._id)} className="flex items-center gap-3 px-4 py-2.5"
-              style={{
-                background: isMe ? 'rgb(217 119 87 / 0.06)' : undefined,
-                borderBottom: i < top5.length - 1 ? '1px solid rgb(255 255 255 / 0.04)' : undefined,
-              }}>
-              <span className="text-[11px] font-bold w-5 text-center shrink-0"
-                style={{ color: i === 0 ? '#f5c842' : i === 1 ? '#a0a0a0' : i === 2 ? '#c87533' : 'rgb(107 100 92)' }}>
-                {i < 3 ? ['🥇','🥈','🥉'][i] : `${i+1}`}
-              </span>
-              <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 overflow-hidden"
-                style={{ background: 'rgb(217 119 87 / 0.15)', color: 'rgb(217 119 87)' }}>
-                {m.userId.avatar
-                  ? <img src={m.userId.avatar} alt="" className="w-full h-full object-cover" />
-                  : m.userId.name?.charAt(0)}
-              </div>
-              <p className="flex-1 text-[12px] font-medium truncate"
-                style={{ color: isMe ? 'rgb(240 235 227)' : 'rgb(160 152 144)' }}>
-                {m.userId.name}
-                {isMe && <span style={{ color: 'rgb(217 119 87)', fontSize: '10px' }}> you</span>}
-              </p>
-              <p className="text-[12px] font-semibold font-mono shrink-0"
-                style={{ color: 'rgb(240 235 227)' }}>{m.totalPoints}</p>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Upcoming matches */}
-      {upcoming.length > 0 && (
-        <div className="rounded-xl overflow-hidden"
-          style={{ border: '1px solid rgb(255 255 255 / 0.07)' }}>
-          <div className="flex items-center justify-between px-4 py-3"
-            style={{ borderBottom: '1px solid rgb(255 255 255 / 0.07)' }}>
-            <p className="text-[11px] font-semibold uppercase tracking-widest"
-              style={{ color: 'rgb(107 100 92)' }}>Coming Up</p>
-            <Link href={`${base}/predictions`} className="text-[11px]"
-              style={{ color: 'rgb(217 119 87)' }}>Predict →</Link>
-          </div>
-          {upcoming.map((match: any, i: number) => {
-            const kickoff = new Date(match.kickoffAt)
-            return (
-              <div key={String(match._id)} className="px-4 py-3 flex items-center gap-3"
-                style={{ borderBottom: i < upcoming.length - 1 ? '1px solid rgb(255 255 255 / 0.04)' : undefined }}>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-medium truncate" style={{ color: 'rgb(240 235 227)' }}>
-                    {match.homeTeam?.name ?? match.homeTeam} vs {match.awayTeam?.name ?? match.awayTeam}
-                  </p>
-                  <p className="text-[11px] mt-0.5" style={{ color: 'rgb(107 100 92)' }}>
-                    {kickoff.toLocaleDateString()} · {kickoff.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                </div>
-                {match.status === 'locked' && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                    style={{ background: 'rgb(248 81 73 / 0.15)', color: 'rgb(248 81 73)' }}>Locked</span>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
+      {/* Standings + coming up — all context objects */}
+      <OverviewContextCards
+        members={top5.map((m: any, i: number) => ({
+          userId: String(m.userId._id),
+          name: m.userId.name,
+          avatar: m.userId.avatar,
+          totalPoints: m.totalPoints,
+          rank: i + 1,
+          isMe: String(m.userId._id) === String(user._id),
+        }))}
+        upcomingMatches={upcoming.map((m: any) => ({
+          matchId: String(m._id),
+          homeTeam: m.homeTeam?.name ?? String(m.homeTeam),
+          awayTeam: m.awayTeam?.name ?? String(m.awayTeam),
+          kickoffAt: m.kickoffAt.toISOString(),
+          status: m.status,
+        }))}
+        leagueSlug={params.leagueId}
+        leagueMongoId={String(league._id)}
+        base={base}
+      />
 
       {/* Quick links */}
       <div className="grid grid-cols-2 gap-2.5">
