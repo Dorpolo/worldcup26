@@ -71,6 +71,7 @@ jobs:
     name: Validate Docker Builds
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - service: web
