@@ -1,6 +1,6 @@
 fastapi==0.115.5
 uvicorn[standard]==0.32.1
-anthropic==0.40.0
+anthropic==0.41.0
 langgraph==0.2.50
 langchain-anthropic==0.3.3
 langchain-core==0.3.25

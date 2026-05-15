@@ -14,8 +14,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - uses: actions/setup-node@v4
         with:
@@ -67,12 +65,22 @@ jobs:
           NEXT_APP_URL: http://localhost:3000
 
   # ── Job 3: Docker build validation (no push) ─────────────────────────────────
+  # web uses root context (Dockerfile copies from packages/ and apps/web/)
+  # api/agent/mcp are self-contained — build from their own directory
   validate-docker:
     name: Validate Docker Builds
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [web, api, agent, mcp]
+        include:
+          - service: web
+            context: .
+          - service: api
+            context: apps/api
+          - service: agent
+            context: apps/agent
+          - service: mcp
+            context: apps/mcp
     steps:
       - uses: actions/checkout@v4
 
@@ -81,7 +89,7 @@ jobs:
       - name: Build ${{ matrix.service }}
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ${{ matrix.context }}
           file: apps/${{ matrix.service }}/Dockerfile
           push: false
           cache-from: type=gha
