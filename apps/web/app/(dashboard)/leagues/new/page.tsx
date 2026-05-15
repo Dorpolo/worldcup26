@@ -32,10 +32,10 @@ export default function NewLeaguePage() {
   }
 
   const inputStyle = {
-    background: 'rgb(255 255 255 / 0.05)',
-    border: '1px solid rgb(255 255 255 / 0.09)',
+    background: 'rgb(var(--c-overlay-md))',
+    border: '1px solid rgb(var(--c-border-subtle))',
     borderRadius: '12px',
-    color: 'rgb(240 235 227)',
+    color: 'rgb(var(--c-text-1))',
     padding: '10px 14px',
     fontSize: '13px',
     outline: 'none',
@@ -46,13 +46,13 @@ export default function NewLeaguePage() {
     <div className="flex items-center justify-center h-full p-8">
       <div className="w-full max-w-md space-y-6" style={{ animation: 'fade-in 0.3s ease' }}>
         <div>
-          <h1 className="text-xl font-semibold" style={{ color: 'rgb(240 235 227)' }}>Create a league</h1>
-          <p className="text-[13px] mt-1" style={{ color: 'rgb(107 100 92)' }}>Invite friends and compete on World Cup predictions.</p>
+          <h1 className="text-xl font-semibold" style={{ color: 'rgb(var(--c-text-1))' }}>Create a league</h1>
+          <p className="text-[13px] mt-1" style={{ color: 'rgb(var(--c-text-3))' }}>Invite friends and compete on every match of the tournament.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'rgb(107 100 92)' }}>
+            <label className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'rgb(var(--c-text-3))' }}>
               League name *
             </label>
             <input
@@ -66,7 +66,7 @@ export default function NewLeaguePage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'rgb(107 100 92)' }}>
+            <label className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'rgb(var(--c-text-3))' }}>
               Description
             </label>
             <textarea
@@ -85,7 +85,7 @@ export default function NewLeaguePage() {
             type="submit"
             disabled={loading || !name.trim()}
             className="w-full py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-40"
-            style={{ background: 'rgb(217 119 87)', color: 'rgb(26 25 23)', border: 'none', cursor: loading || !name.trim() ? 'not-allowed' : 'pointer' }}
+            style={{ background: 'rgb(217 119 87)', color: 'rgb(var(--c-bg))', border: 'none', cursor: loading || !name.trim() ? 'not-allowed' : 'pointer' }}
           >
             {loading ? 'Creating…' : 'Create league'}
           </button>

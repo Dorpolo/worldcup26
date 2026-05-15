@@ -6,6 +6,7 @@ import { MatchDistributionPanel } from '@/components/stats/MatchDistributionPane
 import { StatsContextTable } from './StatsContextTable'
 import type { MemberSeries } from '@/components/stats/PointsProgressionChart'
 import type { AccuracyEntry } from '@/components/stats/AccuracyBreakdownChart'
+import { CopyMarkdownButton } from '@/components/shared/CopyMarkdownButton'
 
 interface Props { params: { leagueId: string } }
 
@@ -127,7 +128,13 @@ export default async function StatsPage({ params }: Props) {
 
   return (
     <div className="h-full overflow-y-auto p-5">
-      <div className="max-w-4xl mx-auto space-y-5">
+      <div className="space-y-5">
+
+        {/* Page header */}
+        <div className="flex items-center justify-between">
+          <div />
+          <CopyMarkdownButton />
+        </div>
 
         {/* Summary bar */}
         <div className="grid grid-cols-3 gap-3">
@@ -145,11 +152,11 @@ export default async function StatsPage({ params }: Props) {
 
         {/* Per-member table — all rows are context objects (draggable + clickable) */}
         <section>
-          <p className="text-[13px] font-semibold mb-3" style={{ color: 'rgb(240 235 227)' }}>Member Stats</p>
+          <p className="text-[13px] font-semibold mb-3" style={{ color: 'rgb(var(--c-text-1))' }}>Member Stats</p>
           {finishedMatches.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-3xl mb-3">📊</p>
-              <p className="text-[12px]" style={{ color: 'rgb(107 100 92)' }}>Stats will appear once the first match finishes.</p>
+              <p className="text-[12px]" style={{ color: 'rgb(var(--c-text-3))' }}>Stats will appear once the first match finishes.</p>
             </div>
           ) : (
             <StatsContextTable
@@ -170,11 +177,11 @@ export default async function StatsPage({ params }: Props) {
         </section>
 
         {/* Legend */}
-        <div className="flex flex-wrap gap-4" style={{ borderTop: '1px solid rgb(255 255 255 / 0.06)', paddingTop: '12px' }}>
+        <div className="flex flex-wrap gap-4" style={{ borderTop: '1px solid rgb(var(--c-border-soft))', paddingTop: '12px' }}>
           {[
             ['rgb(63 185 80)', 'Exact = correct score'],
             ['rgb(99 155 255)', 'Result = correct outcome'],
-            ['rgb(107 100 92)', 'Accuracy = (exact + result) / predicted'],
+            ['rgb(var(--c-text-3))', 'Accuracy = (exact + result) / predicted'],
             ['rgb(240 160 48)', '🔥 Streak = consecutive scoring preds'],
           ].map(([color, label]) => (
             <span key={label} style={{ fontSize: '11px', color }}>{label}</span>
@@ -188,10 +195,10 @@ export default async function StatsPage({ params }: Props) {
 
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-xl p-4" style={{ background: 'rgb(36 34 32)', border: '1px solid rgb(255 255 255 / 0.07)' }}>
-      <p style={{ fontSize: '10px', color: 'rgb(107 100 92)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{label}</p>
-      <p className="text-xl font-bold mt-1.5 truncate" style={{ color: 'rgb(240 235 227)' }}>{value}</p>
-      {sub && <p style={{ fontSize: '11px', color: 'rgb(107 100 92)', marginTop: '2px' }}>{sub}</p>}
+    <div className="rounded-xl p-4" style={{ background: 'rgb(var(--c-surface))', border: '1px solid rgb(var(--c-border-subtle))' }}>
+      <p style={{ fontSize: '10px', color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{label}</p>
+      <p className="text-xl font-bold mt-1.5 truncate" style={{ color: 'rgb(var(--c-text-1))' }}>{value}</p>
+      {sub && <p style={{ fontSize: '11px', color: 'rgb(var(--c-text-3))', marginTop: '2px' }}>{sub}</p>}
     </div>
   )
 }

@@ -2,31 +2,111 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
   push:
-    branches: [main]
+    branches: [main, develop]
 
 jobs:
-  lint-and-typecheck:
-    name: Lint & Type Check
+  # ── Job 1: TypeScript lint + typecheck + unit tests ──────────────────────────
+  test-typescript:
+    name: TypeScript — Lint, Typecheck & Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
 
-      - name: Typecheck packages
-        run: pnpm turbo lint
+      - run: pnpm turbo lint
 
-      - name: Build packages (ensures workspace links resolve)
-        run: pnpm turbo build --filter=@worldcup26/types --filter=@worldcup26/config
+      - run: pnpm turbo build --filter=@worldcup26/types --filter=@worldcup26/config
+
+      - run: pnpm turbo test
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ts-test-results
+          path: packages/config/test-results/
+
+  # ── Job 2: Python agent tests ─────────────────────────────────────────────────
+  test-python:
+    name: Python Agent — Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/agent
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('apps/agent/requirements.txt') }}
+
+      - run: pip install -r requirements.txt
+
+      - run: pytest tests/ -v --tb=short
+        env:
+          ANTHROPIC_API_KEY: test-key
+          INTERNAL_API_KEY: test-key
+          MONGODB_URI: mongodb://localhost:27017/test
+          NEXT_APP_URL: http://localhost:3000
+
+  # ── Job 3: Docker build validation (no push) ─────────────────────────────────
+  validate-docker:
+    name: Validate Docker Builds
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [web, api, agent, mcp]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.service }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/${{ matrix.service }}/Dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: bobby-${{ matrix.service }}:ci
+
+  # ── Job 4: Terraform validate (only if infra changed) ────────────────────────
+  validate-terraform:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'pull_request' &&
+      contains(join(github.event.pull_request.changed_files.*.filename, ','), 'infra/')
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '~> 1.7'
+
+      - run: terraform init -backend=false
+
+      - run: terraform validate
+
+      - run: terraform fmt -check -recursive

@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { cn } from '@/lib/utils'
 import { Toaster } from 'sonner'
+import { ThemeProvider } from '@/components/theme-provider'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -19,31 +20,29 @@ const mono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'WC2026 — Predictions',
-  description: 'Compete with friends on World Cup 2026 match predictions, powered by AI',
+  title: 'Bobby',
+  description: 'Bobby — your World Cup 2026 predictions league.',
   icons: { icon: '/favicon.ico' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={cn('dark', inter.variable, mono.variable)}
-    >
+    <html lang="en" suppressHydrationWarning className={cn(inter.variable, mono.variable)}>
       <body className={cn('font-sans antialiased', inter.className)}>
-        {children}
-        <Toaster
-          theme="dark"
-          position="bottom-right"
-          toastOptions={{
-            style: {
-              background: 'rgb(46 43 40)',
-              border: '1px solid rgb(255 255 255 / 0.1)',
-              color: 'rgb(240 235 227)',
-            },
-          }}
-        />
+        <ThemeProvider>
+          {children}
+          <Toaster
+            theme="system"
+            position="bottom-right"
+            toastOptions={{
+              style: {
+                background: 'rgb(var(--surface-2))',
+                border: '1px solid rgb(var(--border-subtle))',
+                color: 'rgb(var(--text-1))',
+              },
+            }}
+          />
+        </ThemeProvider>
       </body>
     </html>
   )

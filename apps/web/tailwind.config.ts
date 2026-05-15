@@ -89,7 +89,7 @@ const config: Config = {
       boxShadow: {
         'glow-coral': '0 0 24px rgb(217 119 87 / 0.18)',
         'glow-sm':    '0 0 12px rgb(217 119 87 / 0.12)',
-        'panel':      '0 0 0 1px rgb(255 255 255 / 0.06), 0 8px 40px rgb(0 0 0 / 0.5)',
+        'panel':      '0 0 0 1px rgb(var(--c-border-soft)), 0 8px 40px rgb(0 0 0 / 0.5)',
       },
     },
   },

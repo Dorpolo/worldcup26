@@ -4,50 +4,159 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Claude/Anthropic Design Tokens ─────────────────────────────────── */
+/* ─── Design System Tokens ────────────────────────────────────────────── */
 @layer base {
+  /* ══ LIGHT MODE (Anthropic warm palette) ══ */
   :root {
-    /* Warm dark surfaces */
-    --bg:           26 25 23;    /* #1a1917 */
-    --surface:      36 34 32;    /* #242220 */
-    --surface-2:    46 43 40;    /* #2e2b28 */
-    --surface-3:    58 55 51;    /* #3a3733 */
+    /* Backgrounds */
+    --c-bg:           250 249 247;   /* page background — warm white */
+    --c-bg-sidebar:   243 241 238;   /* sidebar / panel background */
+    --c-bg-deep:      232 230 226;   /* deepest inset background */
 
-    /* Borders (rgb tokens — use with rgb()) */
-    --border-rgb:   255 255 255 / 0.09;
-    --border-focus: 255 255 255 / 0.22;
+    /* Surfaces (cards, inputs, floating elements) */
+    --c-surface:      255 255 255;   /* primary card / popover */
+    --c-surface-2:    245 243 240;   /* secondary card */
+    --c-surface-3:    107 100 92;    /* muted label / icon color (text-level) */
 
-    /* Text (rgb tokens) */
-    --text-1:       240 235 227;  /* #f0ebe3 warm cream */
-    --text-2:       160 152 144;  /* #a09890 muted */
-    --text-3:       107 100 92;   /* #6b645c very muted */
+    /* Text */
+    --c-text-1:       26 25 23;      /* primary text — near-black */
+    --c-text-2:       66 60 54;      /* secondary text */
+    --c-text-3:       112 104 96;    /* muted / placeholder */
 
-    /* Coral accent (rgb tokens) */
-    --coral:        217 119 87;   /* #d97757 */
-    --coral-2:      232 149 110;  /* #e8956e lighter */
+    /* Borders (include alpha so rgb() wrapping works) */
+    --c-border-subtle:  0 0 0 / 0.06;
+    --c-border-soft:    0 0 0 / 0.08;
+    --c-border-normal:  0 0 0 / 0.12;
+    --c-border-strong:  0 0 0 / 0.20;
+    --c-border-focus:   0 0 0 / 0.32;
+
+    /* Overlays (semi-transparent layers over backgrounds) */
+    --c-overlay-xs:   0 0 0 / 0.02;
+    --c-overlay-sm:   0 0 0 / 0.04;
+    --c-overlay-md:   0 0 0 / 0.06;
+
+    /* Legacy aliases (keep old names working) */
+    --bg:           250 249 247;
+    --bg-sidebar:   243 241 238;
+    --surface:      255 255 255;
+    --surface-2:    245 243 240;
+    --surface-3:    232 230 226;
+    --border-subtle: 0 0 0 / 0.06;
+    --border-focus:  0 0 0 / 0.32;
+    --text-1:       26 25 23;
+    --text-2:       66 60 54;
+    --text-3:       112 104 96;
+
+    /* Brand */
+    --coral:        217 119 87;
+    --coral-2:      232 149 110;
     --coral-bg:     217 119 87 / 0.12;
 
-    /* Semantic */
+    /* Semantic status */
+    --success:      22 101 52;       /* darker green for light bg contrast */
+    --warning:      146 64 14;       /* amber-900 */
+    --error:        185 28 28;       /* red-700 */
+
+    /* Chrome */
+    --scrollbar-thumb: 0 0 0 / 0.14;
+    --scrollbar-hover: 0 0 0 / 0.22;
+    --selection-bg:    217 119 87 / 0.22;
+
+    /* shadcn compat */
+    --background:         40 50% 97%;
+    --foreground:         30 6% 10%;
+    --card:               40 20% 100%;
+    --card-foreground:    30 6% 10%;
+    --popover:            40 20% 100%;
+    --popover-foreground: 30 6% 10%;
+    --primary:            20 63% 60%;
+    --primary-foreground: 40 6% 10%;
+    --secondary:          40 15% 94%;
+    --secondary-foreground: 30 6% 10%;
+    --muted:              40 15% 94%;
+    --muted-foreground:   30 5% 44%;
+    --accent:             40 15% 92%;
+    --accent-foreground:  30 6% 10%;
+    --destructive:        3 72% 50%;
+    --destructive-foreground: 40 50% 97%;
+    --border:             40 10% 88%;
+    --input:              40 10% 88%;
+    --ring:               20 63% 60%;
+    --radius:             0.625rem;
+  }
+
+  /* ══ DARK MODE ══ */
+  .dark {
+    /* Backgrounds */
+    --c-bg:           26 25 23;
+    --c-bg-sidebar:   22 21 19;
+    --c-bg-deep:      14 13 12;
+
+    /* Surfaces */
+    --c-surface:      36 34 32;
+    --c-surface-2:    46 43 40;
+    --c-surface-3:    107 100 92;    /* matches --c-text-3 — used as muted icon color */
+
+    /* Text */
+    --c-text-1:       240 235 227;
+    --c-text-2:       160 152 144;
+    --c-text-3:       107 100 92;
+
+    /* Borders */
+    --c-border-subtle:  255 255 255 / 0.06;
+    --c-border-soft:    255 255 255 / 0.07;
+    --c-border-normal:  255 255 255 / 0.10;
+    --c-border-strong:  255 255 255 / 0.18;
+    --c-border-focus:   255 255 255 / 0.28;
+
+    /* Overlays */
+    --c-overlay-xs:   255 255 255 / 0.03;
+    --c-overlay-sm:   255 255 255 / 0.05;
+    --c-overlay-md:   255 255 255 / 0.07;
+
+    /* Legacy aliases */
+    --bg:           26 25 23;
+    --bg-sidebar:   22 21 19;
+    --surface:      36 34 32;
+    --surface-2:    46 43 40;
+    --surface-3:    58 55 51;
+    --border-subtle: 255 255 255 / 0.07;
+    --border-focus:  255 255 255 / 0.22;
+    --text-1:       240 235 227;
+    --text-2:       160 152 144;
+    --text-3:       107 100 92;
+
+    /* Brand */
+    --coral:        217 119 87;
+    --coral-2:      232 149 110;
+    --coral-bg:     217 119 87 / 0.12;
+
+    /* Semantic status */
     --success:      63 185 80;
     --warning:      240 160 48;
     --error:        248 81 73;
 
-    /* shadcn compat — HSL format (h s% l%) for hsl(var(--x)) usage */
-    --background:         40 6% 10%;    /* #1a1917 */
-    --foreground:         36 44% 91%;   /* #f0ebe3 */
-    --card:               30 6% 13%;    /* #242220 */
+    /* Chrome */
+    --scrollbar-thumb: 255 255 255 / 0.10;
+    --scrollbar-hover: 255 255 255 / 0.18;
+    --selection-bg:    217 119 87 / 0.35;
+
+    /* shadcn compat */
+    --background:         40 6% 10%;
+    --foreground:         36 44% 91%;
+    --card:               30 6% 13%;
     --card-foreground:    36 44% 91%;
-    --popover:            30 7% 17%;    /* #2e2b28 */
+    --popover:            30 7% 17%;
     --popover-foreground: 36 44% 91%;
-    --primary:            20 63% 60%;   /* #d97757 coral */
-    --primary-foreground: 40 6% 10%;    /* dark bg on coral */
+    --primary:            20 63% 60%;
+    --primary-foreground: 40 6% 10%;
     --secondary:          30 7% 17%;
     --secondary-foreground: 36 44% 91%;
     --muted:              30 7% 17%;
-    --muted-foreground:   20 5% 60%;    /* #a09890 */
-    --accent:             30 6% 21%;    /* #3a3733 */
+    --muted-foreground:   20 5% 60%;
+    --accent:             30 6% 21%;
     --accent-foreground:  36 44% 91%;
-    --destructive:        3 92% 63%;    /* #f85149 */
+    --destructive:        3 92% 63%;
     --destructive-foreground: 36 44% 91%;
     --border:             30 6% 21%;
     --input:              30 6% 21%;
@@ -64,39 +173,51 @@
   }
 
   html {
+    color-scheme: light dark;
+  }
+  html.dark {
     color-scheme: dark;
+  }
+  html.light {
+    color-scheme: light;
   }
 
   body {
-    background-color: rgb(var(--bg));
-    color: rgb(var(--text-1));
+    background-color: rgb(var(--c-bg));
+    color: rgb(var(--c-text-1));
     font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
-  /* Warm scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    background: rgb(255 255 255 / 0.1);
+    background: rgb(var(--scrollbar-thumb));
     border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgb(255 255 255 / 0.18);
+    background: rgb(var(--scrollbar-hover));
   }
 
-  /* Text selection */
   ::selection {
-    background: rgb(217 119 87 / 0.35);
+    background: rgb(var(--selection-bg));
     color: rgb(var(--text-1));
   }
 }
+
+/* ─── Light mode structural overrides ────────────────────────────────── */
+html.light body { background-color: rgb(var(--c-bg)) !important; color: rgb(var(--c-text-1)) !important; }
+
+html.light .wc-sidebar        { background: rgb(var(--c-bg-sidebar)) !important; border-color: rgb(var(--c-border-subtle)) !important; }
+html.light .wc-chat-panel     { background: rgb(var(--c-bg-sidebar)) !important; border-color: rgb(var(--c-border-subtle)) !important; }
+html.light .wc-panel-header   { border-color: rgb(var(--c-border-subtle)) !important; }
+html.light .wc-surface-card   { background: rgb(var(--c-surface)) !important; border-color: rgb(var(--c-border-subtle)) !important; }
+
+html.light .wc-text-1 { color: rgb(var(--c-text-1)) !important; }
+html.light .wc-text-2 { color: rgb(var(--c-text-2)) !important; }
+html.light .wc-text-3 { color: rgb(var(--c-text-3)) !important; }
 
 /* ─── Typography utilities ────────────────────────────────────────────── */
 @layer utilities {
@@ -182,27 +303,27 @@
 .prose-chat th,
 .prose-chat td {
   padding: 0.35rem 0.75rem;
-  border: 1px solid rgb(255 255 255 / 0.1);
+  border: 1px solid rgb(var(--c-border-normal));
   text-align: left;
 }
 .prose-chat th {
-  background: rgb(255 255 255 / 0.05);
+  background: rgb(var(--c-overlay-sm));
   font-weight: 600;
-  color: rgb(var(--text-2));
+  color: rgb(var(--c-text-2));
   text-transform: uppercase;
   font-size: 0.6875rem;
   letter-spacing: 0.05em;
 }
 .prose-chat tr:nth-child(even) td {
-  background: rgb(255 255 255 / 0.02);
+  background: rgb(var(--c-overlay-xs));
 }
 .prose-chat code {
-  background: rgb(255 255 255 / 0.08);
+  background: rgb(var(--c-overlay-md));
   padding: 0.15em 0.45em;
   border-radius: 4px;
   font-size: 0.8125em;
   font-family: var(--font-mono), monospace;
 }
-.prose-chat strong { color: rgb(var(--text-1)); font-weight: 600; }
-.prose-chat em     { color: rgb(var(--text-2)); }
-.prose-chat hr     { border-color: rgb(255 255 255 / 0.1); margin: 0.75rem 0; }
+.prose-chat strong { color: rgb(var(--c-text-1)); font-weight: 600; }
+.prose-chat em     { color: rgb(var(--c-text-2)); }
+.prose-chat hr     { border-color: rgb(var(--c-border-subtle)); margin: 0.75rem 0; }

@@ -4,16 +4,24 @@ import { getAuthUser } from '@/lib/auth-helpers'
 import { connectDB, UserModel } from '@worldcup26/db'
 
 const MentionSchema = z.object({
-  type: z.enum(['user', 'match']),
+  type: z.enum(['user', 'match', 'page']),
   id: z.string(),
   label: z.string(),
   meta: z.record(z.unknown()).default({}),
 })
 
+const AIConfigSchema = z.object({
+  model: z.enum(['claude-haiku', 'claude-sonnet', 'gpt-4o-mini']).default('claude-haiku'),
+  temperature: z.number().min(0).max(1).default(0.7),
+  systemNote: z.string().max(500).default(''),
+}).optional()
+
 const ChatSchema = z.object({
   message: z.string().max(2000).default(''),
   leagueId: z.string().min(1),
+  conversationId: z.string().default(''),
   mentions: z.array(MentionSchema).default([]),
+  aiConfig: AIConfigSchema,
 })
 
 export async function POST(req: NextRequest) {
@@ -58,16 +66,21 @@ export async function POST(req: NextRequest) {
           return `@${m.label} → user_id: ${m.id}${rank ? ` (Rank #${rank}, ${pts} pts)` : ''}`
         }
         if (m.type === 'match') {
-          const home = (m.meta as any).home ?? ''
-          const away = (m.meta as any).away ?? ''
+          const home = (m.meta as any).homeTeam ?? (m.meta as any).home ?? ''
+          const away = (m.meta as any).awayTeam ?? (m.meta as any).away ?? ''
           const status = (m.meta as any).status ?? ''
           return `@${m.label} → match_id: ${m.id}${home ? ` (${home} vs ${away}, ${status})` : ''}`
+        }
+        if (m.type === 'page') {
+          return `@${m.label} → context: ${m.meta.description ?? m.id}`
         }
         return `@${m.label} → id: ${m.id}`
       }).join('\n')
     : ''
 
   const enrichedMessage = (parsed.data.message || `Tell me about ${mentions.map((m) => m.label).join(' and ')}`) + mentionContext
+
+  const { aiConfig } = parsed.data
 
   const agentRes = await fetch(`${agentUrl}/chat`, {
     method: 'POST',
@@ -79,7 +92,11 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({
       user_id: String((user as any)._id),
       league_id: parsed.data.leagueId,
+      conversation_id: parsed.data.conversationId,
       message: enrichedMessage,
+      model: aiConfig?.model ?? 'claude-haiku',
+      temperature: aiConfig?.temperature ?? 0.7,
+      system_note: aiConfig?.systemNote ?? '',
     }),
   }).catch(() => null)
 

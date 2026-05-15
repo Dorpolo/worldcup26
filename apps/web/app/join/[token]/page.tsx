@@ -13,7 +13,7 @@ export default async function JoinPage({ params }: Props) {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: 'rgb(26 25 23)' }}
+      style={{ background: 'rgb(var(--c-bg))' }}
     >
       <div
         className="pointer-events-none fixed inset-0"

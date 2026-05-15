@@ -53,7 +53,7 @@ export function JoinClient({ token }: Props) {
         <div className="w-12 h-12 mx-auto rounded-full flex items-center justify-center" style={{ background: 'rgb(217 119 87 / 0.12)' }}>
           <span className="text-2xl" style={{ animation: 'pulse 1.5s ease-in-out infinite' }}>⚽</span>
         </div>
-        <p className="text-sm" style={{ color: 'rgb(160 152 144)' }}>Joining league…</p>
+        <p className="text-sm" style={{ color: 'rgb(var(--c-text-2))' }}>Joining league…</p>
       </div>
     )
   }
@@ -63,8 +63,8 @@ export function JoinClient({ token }: Props) {
       <div
         className="max-w-sm w-full rounded-2xl p-8 text-center space-y-5"
         style={{
-          background: 'rgb(36 34 32)',
-          border: '1px solid rgb(255 255 255 / 0.08)',
+          background: 'rgb(var(--c-surface))',
+          border: '1px solid rgb(var(--c-border-normal))',
           animation: 'fade-in 0.4s ease',
         }}
       >
@@ -72,13 +72,13 @@ export function JoinClient({ token }: Props) {
           ✕
         </div>
         <div className="space-y-1.5">
-          <h1 className="text-base font-semibold" style={{ color: 'rgb(240 235 227)' }}>Invalid Invite</h1>
-          <p className="text-sm" style={{ color: 'rgb(107 100 92)' }}>{errorMsg}</p>
+          <h1 className="text-base font-semibold" style={{ color: 'rgb(var(--c-text-1))' }}>Invalid Invite</h1>
+          <p className="text-sm" style={{ color: 'rgb(var(--c-text-3))' }}>{errorMsg}</p>
         </div>
         <button
           onClick={() => router.push('/leagues')}
           className="w-full py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
-          style={{ background: 'rgb(255 255 255 / 0.07)', color: 'rgb(160 152 144)' }}
+          style={{ background: 'rgb(var(--c-border-subtle))', color: 'rgb(var(--c-text-2))' }}
         >
           Go to My Leagues
         </button>
@@ -91,8 +91,8 @@ export function JoinClient({ token }: Props) {
       <div
         className="max-w-sm w-full rounded-2xl p-8 text-center space-y-5"
         style={{
-          background: 'rgb(36 34 32)',
-          border: '1px solid rgb(255 255 255 / 0.08)',
+          background: 'rgb(var(--c-surface))',
+          border: '1px solid rgb(var(--c-border-normal))',
           animation: 'fade-in 0.4s ease',
         }}
       >
@@ -100,15 +100,15 @@ export function JoinClient({ token }: Props) {
           ◈
         </div>
         <div className="space-y-1.5">
-          <h1 className="text-base font-semibold" style={{ color: 'rgb(240 235 227)' }}>Already a Member</h1>
-          <p className="text-sm" style={{ color: 'rgb(107 100 92)' }}>
+          <h1 className="text-base font-semibold" style={{ color: 'rgb(var(--c-text-1))' }}>Already a Member</h1>
+          <p className="text-sm" style={{ color: 'rgb(var(--c-text-3))' }}>
             You&apos;re already in <span style={{ color: 'rgb(217 119 87)' }}>{leagueName}</span>.
           </p>
         </div>
         <button
           onClick={goToLeague}
           className="w-full py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
-          style={{ background: 'rgb(217 119 87)', color: 'rgb(26 25 23)' }}
+          style={{ background: 'rgb(217 119 87)', color: 'rgb(var(--c-bg))' }}
         >
           Open League →
         </button>
@@ -120,7 +120,7 @@ export function JoinClient({ token }: Props) {
     <div
       className="max-w-sm w-full rounded-2xl p-8 text-center space-y-5"
       style={{
-        background: 'rgb(36 34 32)',
+        background: 'rgb(var(--c-surface))',
         border: '1px solid rgb(217 119 87 / 0.2)',
         animation: 'fade-in 0.4s ease',
       }}
@@ -129,15 +129,15 @@ export function JoinClient({ token }: Props) {
         🎉
       </div>
       <div className="space-y-1.5">
-        <h1 className="text-lg font-semibold" style={{ color: 'rgb(240 235 227)' }}>You&apos;re in!</h1>
-        <p className="text-sm" style={{ color: 'rgb(107 100 92)' }}>
+        <h1 className="text-lg font-semibold" style={{ color: 'rgb(var(--c-text-1))' }}>You&apos;re in!</h1>
+        <p className="text-sm" style={{ color: 'rgb(var(--c-text-3))' }}>
           Welcome to <span style={{ color: 'rgb(217 119 87)' }}>{leagueName}</span>. Make your predictions before the matches kick off!
         </p>
       </div>
       <button
         onClick={goToLeague}
         className="w-full py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
-        style={{ background: 'rgb(217 119 87)', color: 'rgb(26 25 23)' }}
+        style={{ background: 'rgb(217 119 87)', color: 'rgb(var(--c-bg))' }}
       >
         Go to League →
       </button>

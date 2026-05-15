@@ -7,7 +7,7 @@ export function LogOutButton() {
     <button
       onClick={() => signOut({ callbackUrl: '/login' })}
       className="text-[11px] transition-colors px-1"
-      style={{ color: 'rgb(107 100 92)' }}
+      style={{ color: 'rgb(var(--c-text-3))' }}
       title="Sign out"
     >
       ↩

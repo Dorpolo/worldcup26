@@ -7,6 +7,7 @@ export async function GET(req: NextRequest) {
   if (error) return error
 
   const leagueId = req.nextUrl.searchParams.get('leagueId')
+  const conversationId = req.nextUrl.searchParams.get('conversationId') ?? ''
   const limit = parseInt(req.nextUrl.searchParams.get('limit') ?? '20', 10)
 
   if (!leagueId) {
@@ -15,10 +16,11 @@ export async function GET(req: NextRequest) {
 
   await connectDB()
 
-  const messages = await ChatMessageModel.find({
-    userId: (user as any)._id,
-    leagueId,
-  })
+  const query = conversationId
+    ? { conversationId }
+    : { userId: (user as any)._id, leagueId }
+
+  const messages = await ChatMessageModel.find(query)
     .sort({ createdAt: -1 })
     .limit(limit)
     .lean() as any[]

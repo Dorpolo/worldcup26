@@ -15,7 +15,7 @@ export function MessageBubble({ role, content, streaming }: Props) {
       {!isUser && (
         <div
           className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5"
-          style={{ background: 'linear-gradient(135deg, #d97757, #c8664a)', color: 'rgb(26 25 23)' }}
+          style={{ background: 'linear-gradient(135deg, #d97757, #c8664a)', color: 'rgb(var(--c-bg))' }}
         >
           C
         </div>
@@ -27,14 +27,14 @@ export function MessageBubble({ role, content, streaming }: Props) {
         }`}
         style={
           isUser
-            ? { background: 'rgb(217 119 87 / 0.2)', color: 'rgb(240 235 227)', border: '1px solid rgb(217 119 87 / 0.25)' }
-            : { background: 'rgb(255 255 255 / 0.05)', color: 'rgb(240 235 227)', border: '1px solid rgb(255 255 255 / 0.07)' }
+            ? { background: 'rgb(217 119 87 / 0.2)', color: 'rgb(var(--c-text-1))', border: '1px solid rgb(217 119 87 / 0.25)' }
+            : { background: 'rgb(var(--c-overlay-md))', color: 'rgb(var(--c-text-1))', border: '1px solid rgb(var(--c-border-subtle))' }
         }
       >
         {content ? (
           <MarkdownContent content={content} />
         ) : streaming ? null : (
-          <span style={{ color: 'rgb(107 100 92)' }} className="italic">…</span>
+          <span style={{ color: 'rgb(var(--c-text-3))' }} className="italic">…</span>
         )}
         {streaming && (
           <span
@@ -76,7 +76,7 @@ function MarkdownContent({ content }: { content: string }) {
 
     // HR
     if (/^[-*_]{3,}$/.test(line.trim())) {
-      elements.push(<hr key={i} style={{ borderColor: 'rgb(255 255 255 / 0.1)', margin: '8px 0' }} />)
+      elements.push(<hr key={i} style={{ borderColor: 'rgb(var(--c-border-normal))', margin: '8px 0' }} />)
       i++
       continue
     }
@@ -84,7 +84,7 @@ function MarkdownContent({ content }: { content: string }) {
     // H2
     if (line.startsWith('## ')) {
       elements.push(
-        <p key={i} className="font-semibold text-sm mt-1 mb-0.5" style={{ color: 'rgb(240 235 227)' }}
+        <p key={i} className="font-semibold text-sm mt-1 mb-0.5" style={{ color: 'rgb(var(--c-text-1))' }}
           dangerouslySetInnerHTML={{ __html: renderInline(line.slice(3)) }} />
       )
       i++
@@ -94,7 +94,7 @@ function MarkdownContent({ content }: { content: string }) {
     // H1
     if (line.startsWith('# ')) {
       elements.push(
-        <p key={i} className="font-bold text-sm mt-1" style={{ color: 'rgb(240 235 227)' }}
+        <p key={i} className="font-bold text-sm mt-1" style={{ color: 'rgb(var(--c-text-1))' }}
           dangerouslySetInnerHTML={{ __html: renderInline(line.slice(2)) }} />
       )
       i++
@@ -153,13 +153,13 @@ function TableBlock({ lines }: { lines: string[] }) {
   const [header, ...body] = rows
 
   return (
-    <div className="overflow-x-auto my-1.5 rounded-lg" style={{ border: '1px solid rgb(255 255 255 / 0.08)' }}>
+    <div className="overflow-x-auto my-1.5 rounded-lg" style={{ border: '1px solid rgb(var(--c-border-normal))' }}>
       <table className="w-full text-[12px] border-collapse">
         <thead>
-          <tr style={{ background: 'rgb(255 255 255 / 0.04)' }}>
+          <tr style={{ background: 'rgb(var(--c-overlay-sm))' }}>
             {header.map((cell, j) => (
               <th key={j} className="px-3 py-1.5 text-left font-semibold uppercase tracking-wide text-[10px]"
-                style={{ color: 'rgb(107 100 92)', borderBottom: '1px solid rgb(255 255 255 / 0.08)' }}>
+                style={{ color: 'rgb(var(--c-text-3))', borderBottom: '1px solid rgb(var(--c-border-normal))' }}>
                 {cell}
               </th>
             ))}
@@ -169,7 +169,7 @@ function TableBlock({ lines }: { lines: string[] }) {
           {body.map((row, i) => (
             <tr key={i}>
               {row.map((cell, j) => (
-                <td key={j} className="px-3 py-1.5" style={{ color: 'rgb(240 235 227)', borderBottom: i < body.length - 1 ? '1px solid rgb(255 255 255 / 0.05)' : 'none' }}
+                <td key={j} className="px-3 py-1.5" style={{ color: 'rgb(var(--c-text-1))', borderBottom: i < body.length - 1 ? '1px solid rgb(var(--c-overlay-md))' : 'none' }}
                   dangerouslySetInnerHTML={{ __html: renderInline(cell) }} />
               ))}
             </tr>
@@ -182,8 +182,8 @@ function TableBlock({ lines }: { lines: string[] }) {
 
 function renderInline(text: string): string {
   return text
-    .replace(/\*\*(.+?)\*\*/g, '<strong style="color:rgb(240 235 227);font-weight:600">$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em style="color:rgb(160 152 144)">$1</em>')
-    .replace(/`(.+?)`/g, '<code style="background:rgb(255 255 255 / 0.08);padding:0.15em 0.4em;border-radius:4px;font-size:0.8em;font-family:var(--font-mono,monospace)">$1</code>')
-    .replace(/~~(.+?)~~/g, '<del style="color:rgb(107 100 92)">$1</del>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong style="color:rgb(var(--c-text-1));font-weight:600">$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em style="color:rgb(var(--c-text-2))">$1</em>')
+    .replace(/`(.+?)`/g, '<code style="background:rgb(var(--c-border-normal));padding:0.15em 0.4em;border-radius:4px;font-size:0.8em;font-family:var(--font-mono,monospace)">$1</code>')
+    .replace(/~~(.+?)~~/g, '<del style="color:rgb(var(--c-text-3))">$1</del>')
 }

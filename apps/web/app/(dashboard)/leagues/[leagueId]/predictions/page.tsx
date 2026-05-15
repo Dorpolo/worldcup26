@@ -68,8 +68,8 @@ export default async function PredictionsPage({ params, searchParams }: Props) {
       <div className="h-full overflow-y-auto flex items-center justify-center">
         <div className="text-center space-y-3 py-16">
           <p className="text-4xl">📅</p>
-          <p className="text-sm font-medium" style={{ color: 'rgb(160 152 144)' }}>No fixtures yet</p>
-          <p className="text-[12px]" style={{ color: 'rgb(107 100 92)' }}>
+          <p className="text-sm font-medium" style={{ color: 'rgb(var(--c-text-2))' }}>No fixtures yet</p>
+          <p className="text-[12px]" style={{ color: 'rgb(var(--c-text-3))' }}>
             Fixtures will appear once the schedule is synced
           </p>
         </div>
@@ -82,7 +82,7 @@ export default async function PredictionsPage({ params, searchParams }: Props) {
 
   return (
     <div className="h-full overflow-y-auto p-5">
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="space-y-6">
 
         {/* Viewing another user banner */}
         {isViewingOther && (
@@ -104,7 +104,7 @@ export default async function PredictionsPage({ params, searchParams }: Props) {
             <a
               href={`/leagues/${params.leagueId}/predictions`}
               className="ml-auto text-[11px] underline"
-              style={{ color: 'rgb(107 100 92)' }}
+              style={{ color: 'rgb(var(--c-text-3))' }}
             >
               View mine
             </a>
@@ -114,13 +114,13 @@ export default async function PredictionsPage({ params, searchParams }: Props) {
         {/* Progress bar */}
         {total > 0 && (
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgb(255 255 255 / 0.06)' }}>
+            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgb(var(--c-border-soft))' }}>
               <div
                 className="h-full rounded-full transition-all duration-500"
                 style={{ width: `${Math.min((predicted / total) * 100, 100)}%`, background: 'rgb(217 119 87)' }}
               />
             </div>
-            <span className="text-[11px] font-mono shrink-0" style={{ color: 'rgb(107 100 92)' }}>
+            <span className="text-[11px] font-mono shrink-0" style={{ color: 'rgb(var(--c-text-3))' }}>
               {predicted}/{total} predicted
             </span>
           </div>
@@ -146,7 +146,7 @@ export default async function PredictionsPage({ params, searchParams }: Props) {
                 >
                   {STAGE_LABELS[stage] ?? stage}
                 </span>
-                <span className="text-[10px]" style={{ color: 'rgb(107 100 92)' }}>
+                <span className="text-[10px]" style={{ color: 'rgb(var(--c-text-3))' }}>
                   {stageMatches.length} matches
                 </span>
               </div>
@@ -154,10 +154,10 @@ export default async function PredictionsPage({ params, searchParams }: Props) {
               <div className="space-y-3">
                 {Array.from(byDate.entries()).map(([date, dateMatches]) => (
                   <div key={date}>
-                    <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: 'rgb(58 55 51)' }}>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: 'rgb(var(--c-surface-3))' }}>
                       {date}
                     </p>
-                    <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="grid gap-2 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
                       {dateMatches.map((match) => {
                         const pred = predMap.get(String(match._id))
                         return (

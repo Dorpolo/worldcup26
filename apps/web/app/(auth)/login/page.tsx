@@ -9,7 +9,7 @@ export default async function LoginPage() {
   return (
     <div
       className="min-h-screen flex items-center justify-center"
-      style={{ background: 'rgb(26 25 23)' }}
+      style={{ background: 'rgb(var(--c-bg))' }}
     >
       {/* Ambient glow */}
       <div
@@ -29,11 +29,11 @@ export default async function LoginPage() {
             </div>
           </div>
           <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'rgb(240 235 227)' }}>
-              World Cup 2026
+            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'rgb(var(--c-text-1))' }}>
+              Bobby
             </h1>
-            <p className="text-sm" style={{ color: 'rgb(107 100 92)' }}>
-              Compete with friends. Powered by AI.
+            <p className="text-sm" style={{ color: 'rgb(var(--c-text-3))' }}>
+              Predict. Compete. Win.
             </p>
           </div>
         </div>
@@ -42,8 +42,8 @@ export default async function LoginPage() {
         <div
           className="rounded-2xl p-6 space-y-4"
           style={{
-            background: 'rgb(36 34 32)',
-            border: '1px solid rgb(255 255 255 / 0.08)',
+            background: 'rgb(var(--c-surface))',
+            border: '1px solid rgb(var(--c-border-normal))',
           }}
         >
           {/* Google */}
@@ -57,9 +57,9 @@ export default async function LoginPage() {
               type="submit"
               className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl font-medium text-sm transition-all duration-150"
               style={{
-                background: 'rgb(255 255 255 / 0.07)',
-                border: '1px solid rgb(255 255 255 / 0.1)',
-                color: 'rgb(240 235 227)',
+                background: 'rgb(var(--c-border-subtle))',
+                border: '1px solid rgb(var(--c-border-normal))',
+                color: 'rgb(var(--c-text-1))',
               }}
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -74,9 +74,9 @@ export default async function LoginPage() {
 
           {/* Divider */}
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-px" style={{ background: 'rgb(255 255 255 / 0.08)' }} />
-            <span className="text-[11px]" style={{ color: 'rgb(107 100 92)' }}>or</span>
-            <div className="flex-1 h-px" style={{ background: 'rgb(255 255 255 / 0.08)' }} />
+            <div className="flex-1 h-px" style={{ background: 'rgb(var(--c-border-normal))' }} />
+            <span className="text-[11px]" style={{ color: 'rgb(var(--c-text-3))' }}>or</span>
+            <div className="flex-1 h-px" style={{ background: 'rgb(var(--c-border-normal))' }} />
           </div>
 
           {/* Magic link */}
@@ -95,9 +95,9 @@ export default async function LoginPage() {
               required
               className="w-full rounded-xl px-3.5 py-2.5 text-sm focus:outline-none transition-all duration-150"
               style={{
-                background: 'rgb(255 255 255 / 0.05)',
-                border: '1px solid rgb(255 255 255 / 0.1)',
-                color: 'rgb(240 235 227)',
+                background: 'rgb(var(--c-overlay-md))',
+                border: '1px solid rgb(var(--c-border-normal))',
+                color: 'rgb(var(--c-text-1))',
               }}
             />
             <button
@@ -105,7 +105,7 @@ export default async function LoginPage() {
               className="w-full py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-150"
               style={{
                 background: 'rgb(217 119 87)',
-                color: 'rgb(26 25 23)',
+                color: 'rgb(var(--c-bg))',
               }}
             >
               Send magic link
@@ -113,7 +113,7 @@ export default async function LoginPage() {
           </form>
         </div>
 
-        <p className="text-center text-[11px]" style={{ color: 'rgb(58 55 51)' }}>
+        <p className="text-center text-[11px]" style={{ color: 'rgb(var(--c-surface-3))' }}>
           No password. Just a link in your inbox.
         </p>
       </div>

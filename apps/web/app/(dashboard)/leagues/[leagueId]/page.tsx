@@ -3,6 +3,8 @@ import { redirect, notFound } from 'next/navigation'
 import { connectDB, UserModel, LeagueModel, MembershipModel, MatchModel } from '@worldcup26/db'
 import Link from 'next/link'
 import { OverviewContextCards } from './OverviewContextCards'
+import { Countdown } from '@/components/shared/Countdown'
+import { CopyMarkdownButton } from '@/components/shared/CopyMarkdownButton'
 
 interface Props { params: { leagueId: string } }
 
@@ -41,7 +43,10 @@ export default async function LeagueOverviewPage({ params }: Props) {
   const totalMembers = league.memberCount ?? top5.length
 
   return (
-    <div className="h-full overflow-y-auto p-5 space-y-4">
+    <div className="h-full overflow-y-auto p-5 space-y-4 w-full">
+      {/* Countdown */}
+      <Countdown />
+
       {/* Hero stats */}
       <div className="grid grid-cols-3 gap-3">
         {[
@@ -50,11 +55,11 @@ export default async function LeagueOverviewPage({ params }: Props) {
           { label: 'Members',     value: String(totalMembers),         sub: 'competing' },
         ].map((s) => (
           <div key={s.label} className="rounded-xl p-4"
-            style={{ background: 'rgb(255 255 255 / 0.04)', border: '1px solid rgb(255 255 255 / 0.07)' }}>
+            style={{ background: 'rgb(var(--c-overlay-sm))', border: '1px solid rgb(var(--c-border-subtle))' }}>
             <p className="text-[10px] font-semibold uppercase tracking-widest mb-2"
-              style={{ color: 'rgb(107 100 92)' }}>{s.label}</p>
+              style={{ color: 'rgb(var(--c-text-3))' }}>{s.label}</p>
             <p className="text-2xl font-bold tracking-tight" style={{ color: 'rgb(217 119 87)' }}>{s.value}</p>
-            <p className="text-[11px] mt-0.5" style={{ color: 'rgb(107 100 92)' }}>{s.sub}</p>
+            <p className="text-[11px] mt-0.5" style={{ color: 'rgb(var(--c-text-3))' }}>{s.sub}</p>
           </div>
         ))}
       </div>
@@ -81,6 +86,11 @@ export default async function LeagueOverviewPage({ params }: Props) {
         base={base}
       />
 
+      {/* Copy as markdown */}
+      <div className="flex justify-end">
+        <CopyMarkdownButton />
+      </div>
+
       {/* Quick links */}
       <div className="grid grid-cols-2 gap-2.5">
         {[
@@ -91,9 +101,9 @@ export default async function LeagueOverviewPage({ params }: Props) {
         ].map((link) => (
           <Link key={link.href} href={link.href}
             className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl"
-            style={{ background: 'rgb(255 255 255 / 0.03)', border: '1px solid rgb(255 255 255 / 0.07)' }}>
+            style={{ background: 'rgb(var(--c-overlay-xs))', border: '1px solid rgb(var(--c-border-subtle))' }}>
             <span className="text-sm" style={{ color: 'rgb(217 119 87)' }}>{link.icon}</span>
-            <span className="text-[12px] font-medium" style={{ color: 'rgb(160 152 144)' }}>{link.label}</span>
+            <span className="text-[12px] font-medium" style={{ color: 'rgb(var(--c-text-2))' }}>{link.label}</span>
           </Link>
         ))}
       </div>

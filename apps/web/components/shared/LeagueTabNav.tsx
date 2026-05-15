@@ -27,7 +27,7 @@ export function LeagueTabNav({ base, tabs }: Props) {
             href={fullHref}
             className="flex items-center gap-1.5 px-3 py-2.5 text-[12px] font-medium border-b-2 whitespace-nowrap transition-all duration-150"
             style={{
-              color: isActive ? 'rgb(240 235 227)' : 'rgb(107 100 92)',
+              color: isActive ? 'rgb(var(--c-text-1))' : 'rgb(var(--c-text-3))',
               borderBottomColor: isActive ? 'rgb(217 119 87)' : 'transparent',
             }}
           >

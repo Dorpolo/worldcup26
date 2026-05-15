@@ -123,18 +123,18 @@ export function SettingsClient({ leagueId, leagueSlug, scoringConfig: initial, m
   }
 
   const cardStyle = {
-    background: 'rgb(36 34 32)',
-    border: '1px solid rgb(255 255 255 / 0.07)',
+    background: 'rgb(var(--c-surface))',
+    border: '1px solid rgb(var(--c-border-subtle))',
     borderRadius: '16px',
     padding: '20px',
   }
 
-  const labelStyle = { color: 'rgb(107 100 92)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }
+  const labelStyle = { color: 'rgb(var(--c-text-3))', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }
   const inputStyle = {
-    background: 'rgb(255 255 255 / 0.05)',
-    border: '1px solid rgb(255 255 255 / 0.09)',
+    background: 'rgb(var(--c-overlay-md))',
+    border: '1px solid rgb(var(--c-border-subtle))',
     borderRadius: '10px',
-    color: 'rgb(240 235 227)',
+    color: 'rgb(var(--c-text-1))',
     padding: '8px 12px',
     fontSize: '13px',
     outline: 'none',
@@ -142,7 +142,7 @@ export function SettingsClient({ leagueId, leagueSlug, scoringConfig: initial, m
   }
   const primaryBtn = {
     background: 'rgb(217 119 87)',
-    color: 'rgb(26 25 23)',
+    color: 'rgb(var(--c-bg))',
     borderRadius: '10px',
     padding: '9px 18px',
     fontSize: '12px',
@@ -152,14 +152,14 @@ export function SettingsClient({ leagueId, leagueSlug, scoringConfig: initial, m
     opacity: 1,
   }
   const ghostBtn = {
-    background: 'rgb(255 255 255 / 0.06)',
-    color: 'rgb(160 152 144)',
+    background: 'rgb(var(--c-border-soft))',
+    color: 'rgb(var(--c-text-2))',
     borderRadius: '10px',
     padding: '9px 18px',
     fontSize: '12px',
     fontWeight: 600,
     cursor: 'pointer',
-    border: '1px solid rgb(255 255 255 / 0.08)',
+    border: '1px solid rgb(var(--c-border-normal))',
   }
 
   return (
@@ -169,8 +169,8 @@ export function SettingsClient({ leagueId, leagueSlug, scoringConfig: initial, m
       <section style={cardStyle}>
         <div className="space-y-3">
           <div>
-            <p className="text-[13px] font-semibold mb-0.5" style={{ color: 'rgb(240 235 227)' }}>Invite Members</p>
-            <p className="text-[12px]" style={{ color: 'rgb(107 100 92)' }}>Share a 7-day invite link with friends.</p>
+            <p className="text-[13px] font-semibold mb-0.5" style={{ color: 'rgb(var(--c-text-1))' }}>Invite Members</p>
+            <p className="text-[12px]" style={{ color: 'rgb(var(--c-text-3))' }}>Share a 7-day invite link with friends.</p>
           </div>
           <div className="flex gap-2 flex-wrap items-center">
             <button onClick={handleGenerateInvite} disabled={isPendingInvite} style={{ ...primaryBtn, opacity: isPendingInvite ? 0.5 : 1 }}>
@@ -192,9 +192,9 @@ export function SettingsClient({ leagueId, leagueSlug, scoringConfig: initial, m
       <section style={cardStyle}>
         <div className="space-y-3">
           <div>
-            <p className="text-[13px] font-semibold mb-0.5" style={{ color: 'rgb(240 235 227)' }}>Fixture Sync</p>
-            <p className="text-[12px]" style={{ color: 'rgb(107 100 92)' }}>
-              Pull the latest WC2026 fixtures and results from API-Football. Safe to run multiple times.
+            <p className="text-[13px] font-semibold mb-0.5" style={{ color: 'rgb(var(--c-text-1))' }}>Fixture Sync</p>
+            <p className="text-[12px]" style={{ color: 'rgb(var(--c-text-3))' }}>
+              Pull the latest fixtures and results from API-Football. Safe to run multiple times.
             </p>
           </div>
           <button onClick={handleSyncFixtures} disabled={isSyncing} style={{ ...ghostBtn, opacity: isSyncing ? 0.5 : 1 }}>
@@ -206,7 +206,7 @@ export function SettingsClient({ leagueId, leagueSlug, scoringConfig: initial, m
       {/* Scoring Config */}
       <section style={cardStyle}>
         <div className="space-y-5">
-          <p className="text-[13px] font-semibold" style={{ color: 'rgb(240 235 227)' }}>Scoring Configuration</p>
+          <p className="text-[13px] font-semibold" style={{ color: 'rgb(var(--c-text-1))' }}>Scoring Configuration</p>
 
           <div className="space-y-4">
             <div>
@@ -217,7 +217,7 @@ export function SettingsClient({ leagueId, leagueSlug, scoringConfig: initial, m
               </div>
             </div>
 
-            <div style={{ borderTop: '1px solid rgb(255 255 255 / 0.05)', paddingTop: '16px' }}>
+            <div style={{ borderTop: '1px solid rgb(var(--c-overlay-md))', paddingTop: '16px' }}>
               <p className="mb-2.5" style={labelStyle}>Knockout Stage</p>
               <div className="grid grid-cols-3 gap-3">
                 <ScoreField label="Exact score" value={config.knockoutStage.exactScore} onChange={(v) => setKnockoutField('exactScore', v)} />
@@ -226,7 +226,7 @@ export function SettingsClient({ leagueId, leagueSlug, scoringConfig: initial, m
               </div>
             </div>
 
-            <div style={{ borderTop: '1px solid rgb(255 255 255 / 0.05)', paddingTop: '16px' }}>
+            <div style={{ borderTop: '1px solid rgb(var(--c-overlay-md))', paddingTop: '16px' }}>
               <p className="mb-3" style={labelStyle}>Bonus Predictions</p>
               <div className="space-y-2.5">
                 <BonusRow label="Tournament Winner" bonus={config.bonuses.tournamentWinner} onToggle={(v) => setBonusField('tournamentWinner', 'enabled', v)} onPoints={(v) => setBonusField('tournamentWinner', 'points', v)} />
@@ -245,12 +245,12 @@ export function SettingsClient({ leagueId, leagueSlug, scoringConfig: initial, m
       {/* Member Management */}
       <section style={cardStyle}>
         <div className="space-y-3">
-          <p className="text-[13px] font-semibold" style={{ color: 'rgb(240 235 227)' }}>
-            Members <span style={{ color: 'rgb(107 100 92)', fontWeight: 400 }}>({members.length})</span>
+          <p className="text-[13px] font-semibold" style={{ color: 'rgb(var(--c-text-1))' }}>
+            Members <span style={{ color: 'rgb(var(--c-text-3))', fontWeight: 400 }}>({members.length})</span>
           </p>
           <div className="space-y-1">
             {members.map((m) => (
-              <div key={m.userId} className="flex items-center gap-3 py-2" style={{ borderBottom: '1px solid rgb(255 255 255 / 0.04)' }}>
+              <div key={m.userId} className="flex items-center gap-3 py-2" style={{ borderBottom: '1px solid rgb(var(--c-overlay-sm))' }}>
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
                   style={{ background: 'rgb(217 119 87 / 0.12)', color: 'rgb(217 119 87)' }}
@@ -258,15 +258,15 @@ export function SettingsClient({ leagueId, leagueSlug, scoringConfig: initial, m
                   {m.name?.[0]?.toUpperCase() ?? '?'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-medium truncate" style={{ color: 'rgb(240 235 227)' }}>{m.name}</p>
-                  <p className="text-[11px] truncate" style={{ color: 'rgb(107 100 92)' }}>{m.email}</p>
+                  <p className="text-[12px] font-medium truncate" style={{ color: 'rgb(var(--c-text-1))' }}>{m.name}</p>
+                  <p className="text-[11px] truncate" style={{ color: 'rgb(var(--c-text-3))' }}>{m.email}</p>
                 </div>
-                <span className="text-[11px] font-mono" style={{ color: 'rgb(107 100 92)' }}>{m.totalPoints} pts</span>
+                <span className="text-[11px] font-mono" style={{ color: 'rgb(var(--c-text-3))' }}>{m.totalPoints} pts</span>
                 <span
                   className="text-[10px] px-2 py-0.5 rounded-full"
                   style={m.role === 'owner'
                     ? { background: 'rgb(217 119 87 / 0.12)', color: 'rgb(217 119 87)' }
-                    : { background: 'rgb(255 255 255 / 0.05)', color: 'rgb(107 100 92)' }
+                    : { background: 'rgb(var(--c-overlay-md))', color: 'rgb(var(--c-text-3))' }
                   }
                 >
                   {m.role}
@@ -292,7 +292,7 @@ export function SettingsClient({ leagueId, leagueSlug, scoringConfig: initial, m
 function ScoreField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-[11px]" style={{ color: 'rgb(107 100 92)' }}>{label}</label>
+      <label className="text-[11px]" style={{ color: 'rgb(var(--c-text-3))' }}>{label}</label>
       <input
         type="number"
         min={0}
@@ -300,10 +300,10 @@ function ScoreField({ label, value, onChange }: { label: string; value: number; 
         value={value}
         onChange={(e) => onChange(parseInt(e.target.value, 10) || 0)}
         style={{
-          background: 'rgb(255 255 255 / 0.05)',
-          border: '1px solid rgb(255 255 255 / 0.09)',
+          background: 'rgb(var(--c-overlay-md))',
+          border: '1px solid rgb(var(--c-border-subtle))',
           borderRadius: '10px',
-          color: 'rgb(240 235 227)',
+          color: 'rgb(var(--c-text-1))',
           padding: '7px 12px',
           fontSize: '13px',
           outline: 'none',
@@ -331,7 +331,7 @@ function BonusRow({
         onClick={() => onToggle(!bonus.enabled)}
         className="w-8 h-4 rounded-full flex-shrink-0 relative transition-all"
         style={{
-          background: bonus.enabled ? 'rgb(217 119 87)' : 'rgb(255 255 255 / 0.1)',
+          background: bonus.enabled ? 'rgb(217 119 87)' : 'rgb(var(--c-border-normal))',
           border: 'none',
           cursor: 'pointer',
         }}
@@ -344,7 +344,7 @@ function BonusRow({
           }}
         />
       </button>
-      <span className="text-[12px] flex-1" style={{ color: bonus.enabled ? 'rgb(240 235 227)' : 'rgb(107 100 92)' }}>{label}</span>
+      <span className="text-[12px] flex-1" style={{ color: bonus.enabled ? 'rgb(var(--c-text-1))' : 'rgb(var(--c-text-3))' }}>{label}</span>
       <input
         type="number"
         min={0}
@@ -353,10 +353,10 @@ function BonusRow({
         disabled={!bonus.enabled}
         onChange={(e) => onPoints(parseInt(e.target.value, 10) || 0)}
         style={{
-          background: 'rgb(255 255 255 / 0.05)',
-          border: '1px solid rgb(255 255 255 / 0.09)',
+          background: 'rgb(var(--c-overlay-md))',
+          border: '1px solid rgb(var(--c-border-subtle))',
           borderRadius: '8px',
-          color: bonus.enabled ? 'rgb(240 235 227)' : 'rgb(107 100 92)',
+          color: bonus.enabled ? 'rgb(var(--c-text-1))' : 'rgb(var(--c-text-3))',
           padding: '5px 8px',
           fontSize: '12px',
           outline: 'none',
@@ -365,7 +365,7 @@ function BonusRow({
           textAlign: 'center',
         }}
       />
-      <span className="text-[11px]" style={{ color: 'rgb(107 100 92)' }}>pts</span>
+      <span className="text-[11px]" style={{ color: 'rgb(var(--c-text-3))' }}>pts</span>
     </div>
   )
 }
