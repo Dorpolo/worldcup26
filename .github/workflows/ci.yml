@@ -76,11 +76,11 @@ jobs:
           - service: web
             context: .
           - service: api
-            context: apps/api
+            context: .
           - service: agent
             context: apps/agent
           - service: mcp
-            context: apps/mcp
+            context: .
     steps:
       - uses: actions/checkout@v4
 
