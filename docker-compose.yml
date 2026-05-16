@@ -27,15 +27,16 @@ services:
       dockerfile: apps/web/Dockerfile
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      # Host port 3002 avoids collisions with other local projects on 3000/3001
+      - "3002:3000"
     env_file: .env
     environment:
       MONGODB_URI: mongodb://mongo:27017/worldcup26
       REDIS_URL: redis://redis:6379
       MCP_SERVER_URL: http://mcp:4001
       RAILWAY_AGENT_URL: http://agent:8000
-      NEXTAUTH_URL: http://localhost:3000
-      AUTH_URL: http://localhost:3000
+      NEXTAUTH_URL: http://localhost:3002
+      AUTH_URL: http://localhost:3002
     depends_on:
       - mongo
       - redis
