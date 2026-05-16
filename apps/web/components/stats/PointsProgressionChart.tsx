@@ -39,7 +39,7 @@ const COLOURS = [
 export function PointsProgressionChart({ series }: Props) {
   if (series.length === 0 || series.every((s) => s.data.length === 0)) {
     return (
-      <div className="flex items-center justify-center h-48 text-sm" style={{ color: 'rgb(107 100 92)' }}>
+      <div className="flex items-center justify-center h-48 text-sm" style={{ color: 'rgb(var(--c-text-3))' }}>
         Points progression will appear once matches are scored.
       </div>
     )
@@ -62,29 +62,29 @@ export function PointsProgressionChart({ series }: Props) {
   return (
     <ResponsiveContainer width="100%" height={280}>
       <LineChart data={chartData} margin={{ top: 4, right: 16, bottom: 4, left: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgb(255 255 255 / 0.06)" />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--c-border-soft))" />
         <XAxis
           dataKey="label"
-          tick={{ fontSize: 11, fill: 'rgb(107 100 92)' }}
+          tick={{ fontSize: 11, fill: 'rgb(var(--c-text-3))' }}
           tickLine={false}
           axisLine={false}
         />
         <YAxis
-          tick={{ fontSize: 11, fill: 'rgb(107 100 92)' }}
+          tick={{ fontSize: 11, fill: 'rgb(var(--c-text-3))' }}
           tickLine={false}
           axisLine={false}
           width={32}
         />
         <Tooltip
           contentStyle={{
-            background: 'rgb(36 34 32)',
-            border: '1px solid rgb(255 255 255 / 0.1)',
+            background: 'rgb(var(--c-surface))',
+            border: '1px solid rgb(var(--c-border-normal))',
             borderRadius: 8,
             fontSize: 12,
-            color: 'rgb(240 235 227)',
+            color: 'rgb(var(--c-text-1))',
           }}
         />
-        <Legend wrapperStyle={{ fontSize: 11, color: 'rgb(107 100 92)' }} />
+        <Legend wrapperStyle={{ fontSize: 11, color: 'rgb(var(--c-text-3))' }} />
         {series.map((s, i) => (
           <Line
             key={s.userId}

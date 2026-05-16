@@ -35,10 +35,10 @@ export default async function CupPage({ params }: Props) {
 
   return (
     <div className="h-full overflow-y-auto p-5">
-      <div className="max-w-5xl mx-auto space-y-5">
+      <div className="space-y-5">
         <div>
-          <h1 className="text-[15px] font-semibold" style={{ color: 'rgb(240 235 227)' }}>Cup Competition</h1>
-          <p className="text-[12px] mt-0.5" style={{ color: 'rgb(107 100 92)' }}>
+          <h1 className="text-[15px] font-semibold" style={{ color: 'rgb(var(--c-text-1))' }}>Cup Competition</h1>
+          <p className="text-[12px] mt-0.5" style={{ color: 'rgb(var(--c-text-3))' }}>
             Head-to-head bracket — points per World Cup stage
           </p>
         </div>
@@ -49,6 +49,7 @@ export default async function CupPage({ params }: Props) {
           currentUserId={String(user._id)}
           isOwner={isOwner}
           leagueId={String(league._id)}
+          leagueSlug={params.leagueId}
           memberCount={members.length}
         />
       </div>

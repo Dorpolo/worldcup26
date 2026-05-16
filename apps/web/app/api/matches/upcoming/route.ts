@@ -4,7 +4,7 @@ import { getAuthUser } from '@/lib/auth-helpers'
 import { connectDB, MatchModel } from '@worldcup26/db'
 
 export async function GET(req: NextRequest) {
-  const { error } = await getAuthUser()
+  const { error } = await getAuthUser(req)
   if (error) return error
 
   await connectDB()

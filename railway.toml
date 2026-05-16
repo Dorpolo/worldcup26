@@ -1,31 +1,74 @@
-# Railway multi-service configuration
-# Each service is configured individually in the Railway dashboard.
-# This file documents the intended service setup.
+# Bobby — Railway configuration
+# Each [[services]] entry maps to one Railway service.
+# Set root directory per service in the Railway dashboard to match the paths below.
+#
+# Railway auto-deploys on every push to the branch connected in the dashboard.
+# Use Railway Environments for staging vs production.
 
-# Service 1: Express API + Socket.io
-# - Root directory: apps/api
-# - Build command: pnpm install && pnpm build
-# - Start command: node dist/index.js
-# - Port: 4000
-# - Custom domain: api.worldcup26.com
+# ── Service: API (Express + Socket.io) ────────────────────────────────────────
+[services.api]
+source      = "apps/api"
 
-# Service 2: Python LangGraph Agent
-# - Root directory: apps/agent
-# - Builder: Dockerfile
-# - Port: 8000
-# - Custom domain: agent.worldcup26.com
+[services.api.build]
+builder         = "DOCKERFILE"
+dockerfilePath  = "apps/api/Dockerfile"
 
-# Service 3: MCP Server
-# - Root directory: apps/mcp
-# - Build command: pnpm install && pnpm build
-# - Start command: node dist/index.js
-# - Port: 5000
-# - Custom domain: mcp.worldcup26.com
+[services.api.deploy]
+startCommand            = "node dist/index.js"
+healthcheckPath         = "/health"
+healthcheckTimeout      = 30
+restartPolicyType       = "ON_FAILURE"
+restartPolicyMaxRetries = 3
 
-# Plugins (provisioned via Railway dashboard):
-# - MongoDB: automatically injects MONGODB_URL env var
-# (Redis: use Upstash — external managed service)
+# ── Service: Agent (Python FastAPI + LangGraph) ────────────────────────────────
+[services.agent]
+source = "apps/agent"
 
-# Shared environment variables (set in Railway Variables → Shared):
-# MONGODB_URI, REDIS_URL, ANTHROPIC_API_KEY, API_FOOTBALL_KEY,
-# INTERNAL_API_KEY, CRON_SECRET, NEXTAUTH_URL
+[services.agent.build]
+builder        = "DOCKERFILE"
+dockerfilePath = "apps/agent/Dockerfile"
+
+[services.agent.deploy]
+startCommand            = "uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2"
+healthcheckPath         = "/health"
+healthcheckTimeout      = 60
+restartPolicyType       = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+# ── Service: MCP (Node.js MCP server) ─────────────────────────────────────────
+[services.mcp]
+source = "apps/mcp"
+
+[services.mcp.build]
+builder        = "DOCKERFILE"
+dockerfilePath = "apps/mcp/Dockerfile"
+
+[services.mcp.deploy]
+startCommand            = "node dist/index.js"
+healthcheckPath         = "/health"
+healthcheckTimeout      = 30
+restartPolicyType       = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+# ── Shared environment variables ───────────────────────────────────────────────
+# Set these in Railway → Project → Variables → Shared across services:
+#
+#   MONGODB_URI          (from Railway MongoDB plugin — injected automatically)
+#   REDIS_URL            (from Railway Redis plugin — injected automatically)
+#   ANTHROPIC_API_KEY
+#   API_FOOTBALL_KEY
+#   TAVILY_API_KEY
+#   INTERNAL_API_KEY     openssl rand -hex 32
+#   CRON_SECRET          openssl rand -hex 32
+#   NEXTAUTH_SECRET      openssl rand -base64 32
+#   NEXTAUTH_URL         https://bobby.gg
+#   NEXT_PUBLIC_APP_URL  https://bobby.gg
+#   RESEND_API_KEY
+#   GOOGLE_CLIENT_ID
+#   GOOGLE_CLIENT_SECRET
+#   LANGCHAIN_API_KEY    (optional — LangSmith tracing)
+#
+# Service-specific overrides:
+#   api:   PORT=4000
+#   agent: PORT=8000
+#   mcp:   PORT=4001

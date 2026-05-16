@@ -1,26 +1,15 @@
 import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
-import Resend from 'next-auth/providers/resend'
-import { MongoDBAdapter } from '@auth/mongodb-adapter'
 import { connectDB, UserModel } from '@worldcup26/db'
-import mongoose from 'mongoose'
 import { nanoid } from 'nanoid'
 import { authConfig } from './auth.config'
 
-// Reuse the Mongoose MongoClient for the NextAuth adapter (magic link token storage)
-const clientPromise = connectDB().then(() => mongoose.connection.getClient()) as any
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
-  adapter: MongoDBAdapter(clientPromise),
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    Resend({
-      apiKey: process.env.RESEND_API_KEY!,
-      from: process.env.EMAIL_FROM!,
     }),
   ],
 

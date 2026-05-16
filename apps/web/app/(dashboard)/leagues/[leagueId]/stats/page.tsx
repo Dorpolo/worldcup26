@@ -3,8 +3,10 @@ import { redirect } from 'next/navigation'
 import { connectDB, UserModel, LeagueModel, MembershipModel, PredictionModel, MatchModel } from '@worldcup26/db'
 import { StatsCharts } from './StatsCharts'
 import { MatchDistributionPanel } from '@/components/stats/MatchDistributionPanel'
+import { StatsContextTable } from './StatsContextTable'
 import type { MemberSeries } from '@/components/stats/PointsProgressionChart'
 import type { AccuracyEntry } from '@/components/stats/AccuracyBreakdownChart'
+import { CopyMarkdownButton } from '@/components/shared/CopyMarkdownButton'
 
 interface Props { params: { leagueId: string } }
 
@@ -126,7 +128,13 @@ export default async function StatsPage({ params }: Props) {
 
   return (
     <div className="h-full overflow-y-auto p-5">
-      <div className="max-w-4xl mx-auto space-y-5">
+      <div className="space-y-5">
+
+        {/* Page header */}
+        <div className="flex items-center justify-between">
+          <div />
+          <CopyMarkdownButton />
+        </div>
 
         {/* Summary bar */}
         <div className="grid grid-cols-3 gap-3">
@@ -142,109 +150,44 @@ export default async function StatsPage({ params }: Props) {
         {/* Charts */}
         <StatsCharts progressionSeries={progressionSeries} accuracyData={accuracyData} />
 
-        {/* Per-member table */}
+        {/* Per-member table — all rows are context objects (draggable + clickable) */}
         <section>
-          <p className="text-[13px] font-semibold mb-3" style={{ color: 'rgb(240 235 227)' }}>Member Stats</p>
-          <div className="overflow-x-auto rounded-xl" style={{ border: '1px solid rgb(255 255 255 / 0.07)' }}>
-            <table className="w-full text-sm">
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgb(255 255 255 / 0.06)' }}>
-                  {['#', 'Member', 'Pts', 'Exact', 'Result', 'Accuracy', 'Pts/match', 'Streak'].map((h, i) => (
-                    <th
-                      key={h}
-                      className={i === 0 || i === 1 ? 'text-left' : 'text-right'}
-                      style={{ padding: '10px 14px', color: 'rgb(107 100 92)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgb(255 255 255 / 0.02)' }}
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {memberStats
-                  .sort((a, b) => b.totalPoints - a.totalPoints)
-                  .map((m) => (
-                    <tr
-                      key={m.userId}
-                      style={{ borderBottom: '1px solid rgb(255 255 255 / 0.04)', background: m.isMe ? 'rgb(217 119 87 / 0.04)' : 'transparent' }}
-                    >
-                      <td style={{ padding: '10px 14px', color: 'rgb(107 100 92)', fontSize: '12px' }}>{m.rank}</td>
-                      <td style={{ padding: '10px 14px' }}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
-                            style={{ background: 'rgb(217 119 87 / 0.12)', color: 'rgb(217 119 87)' }}>
-                            {m.name?.[0]?.toUpperCase()}
-                          </div>
-                          <span style={{ fontSize: '12px', color: 'rgb(240 235 227)', fontWeight: m.isMe ? 600 : 400 }}>
-                            {m.name}
-                            {m.isMe && <span style={{ color: 'rgb(217 119 87)', fontSize: '10px', marginLeft: '4px' }}>you</span>}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="text-right" style={{ padding: '10px 14px', fontWeight: 700, fontSize: '12px', color: 'rgb(240 235 227)' }}>{m.totalPoints}</td>
-                      <td className="text-right" style={{ padding: '10px 14px', fontSize: '12px', color: 'rgb(63 185 80)', fontWeight: 600 }}>{m.exactScores}</td>
-                      <td className="text-right" style={{ padding: '10px 14px', fontSize: '12px', color: 'rgb(99 155 255)', fontWeight: 600 }}>{m.correctResults}</td>
-                      <td className="text-right" style={{ padding: '10px 14px', fontSize: '12px', color: m.accuracy >= 50 ? 'rgb(63 185 80)' : 'rgb(107 100 92)', fontWeight: 600 }}>
-                        {m.accuracy}%
-                      </td>
-                      <td className="text-right" style={{ padding: '10px 14px', fontSize: '12px', color: 'rgb(107 100 92)' }}>{m.pointsPerMatch}</td>
-                      <td className="text-right" style={{ padding: '10px 14px', fontSize: '12px' }}>
-                        {m.bestStreak > 0 ? (
-                          <span style={{ color: 'rgb(240 160 48)' }}>🔥 {m.bestStreak}</span>
-                        ) : (
-                          <span style={{ color: 'rgb(58 55 51)' }}>–</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-
-          {finishedMatches.length === 0 && (
+          <p className="text-[13px] font-semibold mb-3" style={{ color: 'rgb(var(--c-text-1))' }}>Member Stats</p>
+          {finishedMatches.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-3xl mb-3">📊</p>
-              <p className="text-[12px]" style={{ color: 'rgb(107 100 92)' }}>Stats will appear once the first match finishes.</p>
+              <p className="text-[12px]" style={{ color: 'rgb(var(--c-text-3))' }}>Stats will appear once the first match finishes.</p>
             </div>
+          ) : (
+            <StatsContextTable
+              members={memberStats.sort((a, b) => b.totalPoints - a.totalPoints)}
+              matches={finishedMatches.map((m: any) => ({
+                matchId: String(m._id),
+                label: m.stage === 'group'
+                  ? `${m.homeTeam?.shortName ?? '?'} vs ${m.awayTeam?.shortName ?? '?'}`
+                  : m.stage === 'round_of_16' ? `R16: ${m.homeTeam?.shortName} vs ${m.awayTeam?.shortName}`
+                  : m.stage === 'quarter_final' ? `QF: ${m.homeTeam?.shortName} vs ${m.awayTeam?.shortName}`
+                  : m.stage === 'semi_final' ? `SF: ${m.homeTeam?.shortName} vs ${m.awayTeam?.shortName}`
+                  : 'Final',
+              }))}
+              leagueSlug={params.leagueId}
+              leagueMongoId={String(league._id)}
+            />
           )}
         </section>
 
         {/* Legend */}
-        <div className="flex flex-wrap gap-4" style={{ borderTop: '1px solid rgb(255 255 255 / 0.06)', paddingTop: '12px' }}>
+        <div className="flex flex-wrap gap-4" style={{ borderTop: '1px solid rgb(var(--c-border-soft))', paddingTop: '12px' }}>
           {[
             ['rgb(63 185 80)', 'Exact = correct score'],
             ['rgb(99 155 255)', 'Result = correct outcome'],
-            ['rgb(107 100 92)', 'Accuracy = (exact + result) / predicted'],
+            ['rgb(var(--c-text-3))', 'Accuracy = (exact + result) / predicted'],
             ['rgb(240 160 48)', '🔥 Streak = consecutive scoring preds'],
           ].map(([color, label]) => (
             <span key={label} style={{ fontSize: '11px', color }}>{label}</span>
           ))}
         </div>
 
-        {/* Per-match breakdown */}
-        {finishedMatches.length > 0 && (
-          <section>
-            <p className="text-[13px] font-semibold mb-3" style={{ color: 'rgb(240 235 227)' }}>Match Breakdown</p>
-            <div className="flex flex-wrap gap-2">
-              {finishedMatches.map((m: any) => {
-                const label = m.stage === 'group'
-                  ? `${m.homeTeam?.shortName ?? '?'} vs ${m.awayTeam?.shortName ?? '?'}`
-                  : m.stage === 'round_of_16' ? `R16: ${m.homeTeam?.shortName} vs ${m.awayTeam?.shortName}`
-                  : m.stage === 'quarter_final' ? `QF: ${m.homeTeam?.shortName} vs ${m.awayTeam?.shortName}`
-                  : m.stage === 'semi_final' ? `SF: ${m.homeTeam?.shortName} vs ${m.awayTeam?.shortName}`
-                  : 'Final'
-                return (
-                  <MatchDistributionPanel
-                    key={String(m._id)}
-                    matchId={String(m._id)}
-                    leagueId={String(league._id)}
-                    matchLabel={label}
-                  />
-                )
-              })}
-            </div>
-          </section>
-        )}
       </div>
     </div>
   )
@@ -252,10 +195,10 @@ export default async function StatsPage({ params }: Props) {
 
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-xl p-4" style={{ background: 'rgb(36 34 32)', border: '1px solid rgb(255 255 255 / 0.07)' }}>
-      <p style={{ fontSize: '10px', color: 'rgb(107 100 92)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{label}</p>
-      <p className="text-xl font-bold mt-1.5 truncate" style={{ color: 'rgb(240 235 227)' }}>{value}</p>
-      {sub && <p style={{ fontSize: '11px', color: 'rgb(107 100 92)', marginTop: '2px' }}>{sub}</p>}
+    <div className="rounded-xl p-4" style={{ background: 'rgb(var(--c-surface))', border: '1px solid rgb(var(--c-border-subtle))' }}>
+      <p style={{ fontSize: '10px', color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{label}</p>
+      <p className="text-xl font-bold mt-1.5 truncate" style={{ color: 'rgb(var(--c-text-1))' }}>{value}</p>
+      {sub && <p style={{ fontSize: '11px', color: 'rgb(var(--c-text-3))', marginTop: '2px' }}>{sub}</p>}
     </div>
   )
 }

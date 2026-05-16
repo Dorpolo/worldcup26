@@ -4,17 +4,19 @@ import { connectDB, MembershipModel, UserModel } from '@worldcup26/db'
 
 interface Params { params: { leagueId: string } }
 
-export async function GET(_req: NextRequest, { params }: Params) {
-  const { user, error } = await getAuthUser()
+export async function GET(req: NextRequest, { params }: Params) {
+  const { user, error } = await getAuthUser(req)
   if (error) return error
 
   await connectDB()
 
-  const membership = await MembershipModel.findOne({
-    leagueId: params.leagueId,
-    userId: (user as any)._id,
-  }).lean()
-  if (!membership) return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 })
+  if (!(user as any).isInternal) {
+    const membership = await MembershipModel.findOne({
+      leagueId: params.leagueId,
+      userId: (user as any)._id,
+    }).lean()
+    if (!membership) return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 })
+  }
 
   const members = await MembershipModel.find({ leagueId: params.leagueId })
     .populate('userId', 'name avatar email')
@@ -38,7 +40,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(req: NextRequest, { params }: Params) {
-  const { user, error } = await getAuthUser()
+  const { user, error } = await getAuthUser(req)
   if (error) return error
 
   const { searchParams } = new URL(req.url)

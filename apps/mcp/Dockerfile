@@ -1,21 +1,32 @@
-FROM node:22-alpine AS builder
-WORKDIR /app
+FROM node:22-alpine AS base
 RUN npm install -g pnpm
 
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile
+# ── Builder ──────────────────────────────────────────────────────────────────
+FROM base AS builder
+WORKDIR /monorepo
 
-COPY . .
-RUN pnpm build
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY apps/mcp/package.json ./apps/mcp/package.json
 
+RUN pnpm install --frozen-lockfile --filter @worldcup26/mcp
+
+COPY apps/mcp/ ./apps/mcp/
+
+RUN pnpm --filter @worldcup26/mcp build
+
+# Strip devDependencies for a clean runner install
+RUN node -e "const p=JSON.parse(require('fs').readFileSync('apps/mcp/package.json','utf8'));delete p.devDependencies;require('fs').writeFileSync('apps/mcp/package.prod.json',JSON.stringify(p,null,2));"
+
+# ── Runner ───────────────────────────────────────────────────────────────────
 FROM node:22-alpine AS runner
 WORKDIR /app
-RUN npm install -g pnpm
 
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
+ENV NODE_ENV=production
+
+COPY --from=builder /monorepo/apps/mcp/package.prod.json ./package.json
+RUN npm install --production --ignore-scripts
+
+COPY --from=builder /monorepo/apps/mcp/dist ./dist
 
 EXPOSE 4001
-ENV NODE_ENV=production
 CMD ["node", "dist/index.js"]

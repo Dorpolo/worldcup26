@@ -1,6 +1,6 @@
 import { auth } from '@/auth'
 import { redirect, notFound } from 'next/navigation'
-import { connectDB, UserModel, LeagueModel, MembershipModel, ChatMessageModel } from '@worldcup26/db'
+import { connectDB, UserModel, LeagueModel, MembershipModel } from '@worldcup26/db'
 import Link from 'next/link'
 import { ChatPanel } from '@/components/chat/ChatPanel'
 import { LeagueTabNav } from '@/components/shared/LeagueTabNav'
@@ -18,6 +18,7 @@ const NAV_TABS = [
   { href: '/cup',         label: 'Cup',         icon: '◎' },
   { href: '/stats',       label: 'Stats',       icon: '⌇' },
   { href: '/rules',       label: 'Rules',       icon: '≡' },
+  { href: '/agent',       label: 'Agent',       icon: '⚡' },
 ]
 
 export default async function LeagueLayout({ children, params }: Props) {
@@ -41,21 +42,6 @@ export default async function LeagueLayout({ children, params }: Props) {
   const isOwner = membership.role === 'owner'
   const base = `/leagues/${params.leagueId}`
 
-  // Load last 20 chat messages for the panel
-  const history = await ChatMessageModel.find({
-    userId: user._id,
-    leagueId: league._id,
-  })
-    .sort({ createdAt: -1 })
-    .limit(20)
-    .lean() as any[]
-
-  const chatHistory = history.reverse().map((m: any) => ({
-    id: String(m._id),
-    role: m.role as 'user' | 'assistant',
-    content: m.content,
-  }))
-
   return (
     <div className="flex h-full overflow-hidden">
       {/* ── Left: tabs + content ────────────────────────────────── */}
@@ -63,7 +49,7 @@ export default async function LeagueLayout({ children, params }: Props) {
         {/* League header */}
         <header
           className="shrink-0 px-5 py-3 flex items-center gap-3"
-          style={{ borderBottom: '1px solid rgb(255 255 255 / 0.07)' }}
+          style={{ borderBottom: '1px solid rgb(var(--c-border-subtle))' }}
         >
           {/* League avatar */}
           <div
@@ -78,10 +64,10 @@ export default async function LeagueLayout({ children, params }: Props) {
           </div>
 
           <div className="flex-1 min-w-0">
-            <h1 className="text-[13px] font-semibold truncate" style={{ color: 'rgb(240 235 227)' }}>
+            <h1 className="text-[13px] font-semibold truncate" style={{ color: 'rgb(var(--c-text-1))' }}>
               {league.name}
             </h1>
-            <p className="text-[11px]" style={{ color: 'rgb(107 100 92)' }}>
+            <p className="text-[11px]" style={{ color: 'rgb(var(--c-text-3))' }}>
               Rank #{membership.rank ?? '—'} &nbsp;·&nbsp; {membership.totalPoints ?? 0} pts &nbsp;·&nbsp; {league.memberCount} members
             </p>
           </div>
@@ -90,7 +76,7 @@ export default async function LeagueLayout({ children, params }: Props) {
             <Link
               href={`${base}/settings`}
               className="text-[11px] px-2.5 py-1.5 rounded-md transition-colors"
-              style={{ color: 'rgb(107 100 92)', background: 'rgb(255 255 255 / 0.05)' }}
+              style={{ color: 'rgb(var(--c-text-3))', background: 'rgb(var(--c-overlay-md))' }}
             >
               Settings
             </Link>
@@ -100,7 +86,7 @@ export default async function LeagueLayout({ children, params }: Props) {
         {/* Tab nav */}
         <nav
           className="shrink-0 px-5 flex items-end gap-0.5 overflow-x-auto"
-          style={{ borderBottom: '1px solid rgb(255 255 255 / 0.07)' }}
+          style={{ borderBottom: '1px solid rgb(var(--c-border-subtle))' }}
         >
           <LeagueTabNav base={base} tabs={NAV_TABS} />
         </nav>
@@ -118,7 +104,7 @@ export default async function LeagueLayout({ children, params }: Props) {
         userName={user.name}
         userRank={membership.rank ?? 0}
         userPoints={membership.totalPoints ?? 0}
-        initialMessages={chatHistory}
+        hasAiKey={!!user.aiApiKey}
       />
     </div>
   )

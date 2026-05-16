@@ -1,0 +1,62 @@
+name: Terraform Plan
+
+on:
+  pull_request:
+    paths:
+      - 'infra/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '~> 1.7'
+
+      - run: terraform init
+
+      - id: plan
+        run: terraform plan -var-file=environments/staging.tfvars -no-color -out=tfplan
+        continue-on-error: true
+        env:
+          TF_VAR_mongodb_atlas_public_key: ${{ secrets.ATLAS_PUBLIC_KEY }}
+          TF_VAR_mongodb_atlas_private_key: ${{ secrets.ATLAS_PRIVATE_KEY }}
+          TF_VAR_mongodb_atlas_project_id: ${{ secrets.ATLAS_PROJECT_ID }}
+          TF_VAR_anthropic_api_key: fake
+          TF_VAR_api_football_key: fake
+          TF_VAR_internal_api_key: fake
+          TF_VAR_cron_secret: fake
+          TF_VAR_nextauth_secret: fake
+          TF_VAR_resend_api_key: fake
+          TF_VAR_tavily_api_key: fake
+          TF_VAR_vercel_api_token: fake
+
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const output = `#### Terraform Plan 📖
+            \`\`\`
+            ${{ steps.plan.outputs.stdout }}
+            \`\`\`
+            *Pushed by: @${{ github.actor }}*`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })

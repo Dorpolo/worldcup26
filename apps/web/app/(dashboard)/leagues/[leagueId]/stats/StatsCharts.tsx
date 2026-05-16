@@ -9,8 +9,8 @@ interface Props {
 }
 
 const card = {
-  background: 'rgb(36 34 32)',
-  border: '1px solid rgb(255 255 255 / 0.07)',
+  background: 'rgb(var(--c-surface))',
+  border: '1px solid rgb(var(--c-border-subtle))',
   borderRadius: '16px',
   padding: '16px',
 }
@@ -20,7 +20,7 @@ const sectionLabel = {
   fontWeight: 600,
   textTransform: 'uppercase' as const,
   letterSpacing: '0.08em',
-  color: 'rgb(107 100 92)',
+  color: 'rgb(var(--c-text-3))',
   marginBottom: '12px',
 }
 
@@ -40,14 +40,14 @@ export function StatsCharts({ progressionSeries, accuracyData }: Props) {
           <AccuracyBreakdownChart data={accuracyData} />
         </div>
         <div className="flex gap-4 mt-2">
-          <span className="flex items-center gap-1.5 text-[11px]" style={{ color: 'rgb(107 100 92)' }}>
+          <span className="flex items-center gap-1.5 text-[11px]" style={{ color: 'rgb(var(--c-text-3))' }}>
             <span className="w-2.5 h-2.5 rounded-sm" style={{ background: 'rgb(63 185 80)' }} />Exact
           </span>
-          <span className="flex items-center gap-1.5 text-[11px]" style={{ color: 'rgb(107 100 92)' }}>
+          <span className="flex items-center gap-1.5 text-[11px]" style={{ color: 'rgb(var(--c-text-3))' }}>
             <span className="w-2.5 h-2.5 rounded-sm" style={{ background: 'rgb(99 155 255)' }} />Result
           </span>
-          <span className="flex items-center gap-1.5 text-[11px]" style={{ color: 'rgb(107 100 92)' }}>
-            <span className="w-2.5 h-2.5 rounded-sm" style={{ background: 'rgb(58 55 51)' }} />Miss
+          <span className="flex items-center gap-1.5 text-[11px]" style={{ color: 'rgb(var(--c-text-3))' }}>
+            <span className="w-2.5 h-2.5 rounded-sm" style={{ background: 'rgb(var(--c-surface-3))' }} />Miss
           </span>
         </div>
       </section>
