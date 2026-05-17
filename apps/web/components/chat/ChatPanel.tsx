@@ -289,7 +289,7 @@ export function ChatPanel(props: Props) {
               {/* Key status dot */}
               <div
                 className="w-1.5 h-1.5 rounded-full shrink-0"
-                title={hasKey ? 'Polo Market is ready' : 'Polo Market needs a key — click Config'}
+                title={hasKey ? 'Declan is ready' : 'Declan needs a key — click Config'}
                 style={{ background: hasKey ? 'rgb(63 185 80)' : 'rgb(240 160 48)' }}
               />
 

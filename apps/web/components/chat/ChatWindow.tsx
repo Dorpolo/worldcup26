@@ -232,7 +232,7 @@ function WelcomeMessage({ userName, leagueName, userRank, userPoints }: {
           Hey {userName.split(' ')[0]}! 👋
         </p>
         <p className="text-[12px] leading-relaxed" style={{ color: 'rgb(var(--c-text-3))' }}>
-          I'm Polo. I'm in <span style={{ color: 'rgb(217 119 87)' }}>{leagueName}</span> too.
+          I'm Declan. I'm in <span style={{ color: 'rgb(217 119 87)' }}>{leagueName}</span> too.
           {userRank > 0
             ? ` You're #${userRank} with ${userPoints} pts.`
             : ' Let\'s go win this.'}

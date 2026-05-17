@@ -8,7 +8,7 @@ import { SandboxPanel } from './SandboxPanel'
 const TABS = [
   { id: 'skills',  label: '⚡ Skills',      hint: 'Custom instructions & tools' },
   { id: 'mcp',     label: '⊕ MCP Servers', hint: 'External tool integrations' },
-  { id: 'sandbox', label: '⧉ Sandbox',      hint: 'Take Polo for a spin' },
+  { id: 'sandbox', label: '⧉ Sandbox',      hint: 'Take Declan for a spin' },
 ]
 
 interface Props {
@@ -27,11 +27,11 @@ export function AgentExperienceClient({ leagueId }: Props) {
         <div className="flex items-center gap-3 mb-1">
           <span className="text-xl">⚡</span>
           <h1 className="text-[16px] font-semibold" style={{ color: 'rgb(var(--c-text-1))' }}>
-            Extend Polo Market
+            Extend Declan
           </h1>
         </div>
         <p className="text-[12px] mb-4" style={{ color: 'rgb(var(--c-text-3))' }}>
-          Teach Polo new skills, connect external tools, and take it for a spin.
+          Teach Declan new skills, connect external tools, and take him for a spin.
         </p>
 
         {/* Tabs */}
