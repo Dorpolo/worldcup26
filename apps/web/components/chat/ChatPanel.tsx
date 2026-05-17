@@ -216,9 +216,9 @@ export function ChatPanel(props: Props) {
           onClick={() => setOpen(true)}
           className="shrink-0 flex flex-col items-center justify-center gap-3 w-10 transition-colors wc-chat-panel"
           style={{ borderLeft: border, background: surface, color: text3 }}
-          title="Open Bobby"
+          title="Open Polo Market"
         >
-          <span className="text-[10px] font-semibold uppercase tracking-widest rotate-[-90deg] whitespace-nowrap" style={{ color: coral }}>Bobby</span>
+          <span className="text-[10px] font-semibold uppercase tracking-widest rotate-[-90deg] whitespace-nowrap" style={{ color: coral }}>Polo Market</span>
           <span className="text-base">›</span>
         </button>
       )}
@@ -249,7 +249,7 @@ export function ChatPanel(props: Props) {
                 B
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-semibold truncate" style={{ color: text1 }}>Bobby</p>
+                <p className="text-[12px] font-semibold truncate" style={{ color: text1 }}>Polo Market</p>
               </div>
 
               {/* Memory toggle */}
@@ -289,7 +289,7 @@ export function ChatPanel(props: Props) {
               {/* Key status dot */}
               <div
                 className="w-1.5 h-1.5 rounded-full shrink-0"
-                title={hasKey ? 'Bobby is ready' : 'Bobby needs a key — click Config'}
+                title={hasKey ? 'Polo Market is ready' : 'Polo Market needs a key — click Config'}
                 style={{ background: hasKey ? 'rgb(63 185 80)' : 'rgb(240 160 48)' }}
               />
 

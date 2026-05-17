@@ -56,7 +56,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold tracking-tight" style={{ color: 'rgb(var(--text-1))' }}>
-              Bobby
+              Polo Market
             </p>
             <p className="text-[10px] font-medium uppercase tracking-widest" style={{ color: 'rgb(var(--text-3))' }}>
               World Cup 2026

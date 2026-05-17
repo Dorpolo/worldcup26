@@ -30,7 +30,7 @@ export default async function LoginPage() {
           </div>
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'rgb(var(--c-text-1))' }}>
-              Bobby
+              Polo Market
             </h1>
             <p className="text-sm" style={{ color: 'rgb(var(--c-text-3))' }}>
               Predict. Compete. Win.

@@ -20,8 +20,8 @@ const mono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Bobby',
-  description: 'Bobby — your World Cup 2026 predictions league.',
+  title: 'Polo Market',
+  description: 'Polo Market — your World Cup 2026 predictions league.',
   icons: { icon: '/favicon.ico' },
 }
 
