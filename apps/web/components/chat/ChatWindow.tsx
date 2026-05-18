@@ -225,22 +225,19 @@ function WelcomeMessage({ userName, leagueName, userRank, userPoints }: {
         className="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold shadow-glow-coral"
         style={{ background: 'linear-gradient(135deg, #d97757, #c8664a)', color: 'rgb(var(--c-bg))' }}
       >
-        B
+        D
       </div>
-      <div className="space-y-1 max-w-[260px]">
-        <p className="text-[13px] font-semibold" style={{ color: 'rgb(var(--c-text-1))' }}>
-          Hey {userName.split(' ')[0]}! 👋
-        </p>
-        <p className="text-[12px] leading-relaxed" style={{ color: 'rgb(var(--c-text-3))' }}>
-          I'm Declan. I'm in <span style={{ color: 'rgb(217 119 87)' }}>{leagueName}</span> too.
-          {userRank > 0
-            ? ` You're #${userRank} with ${userPoints} pts.`
-            : ' Let\'s go win this.'}
-        </p>
+      <div className="flex items-center gap-3 mt-1">
+        {['Ask', 'Act', 'Bet'].map((word) => (
+          <span
+            key={word}
+            className="text-[13px] font-semibold tracking-wide uppercase"
+            style={{ color: 'rgb(217 119 87)' }}
+          >
+            {word}
+          </span>
+        ))}
       </div>
-      <p className="text-[11px]" style={{ color: 'rgb(var(--c-surface-3))' }}>
-        Drop any player or match card here to add context ↓
-      </p>
     </div>
   )
 }
