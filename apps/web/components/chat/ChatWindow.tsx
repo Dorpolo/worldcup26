@@ -180,36 +180,43 @@ export function ChatWindow({
     }
   }, [isLoading, leagueId, conversationId, aiConfig])
 
+  /* ── Empty state: avatar + label + input all vertically centered ── */
+  if (messages.length === 0) {
+    return (
+      <div className="flex flex-col h-full items-center justify-center px-6 gap-5">
+        <WelcomeMessage
+          userName={userName}
+          leagueName={leagueName}
+          userRank={userRank}
+          userPoints={userPoints}
+        />
+        <div className="w-full max-w-2xl">
+          <ChatInput onSend={(msg, mentions) => sendMessage(msg, mentions)} disabled={isLoading} leagueId={leagueId} />
+        </div>
+      </div>
+    )
+  }
+
+  /* ── Active chat: messages + centered input pinned to bottom ── */
   return (
     <div className="flex flex-col h-full">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-3">
-        {messages.length === 0 && (
-          <div className="flex items-center justify-center h-full min-h-[200px]">
-            <WelcomeMessage
-              userName={userName}
-              leagueName={leagueName}
-              userRank={userRank}
-              userPoints={userPoints}
-            />
-          </div>
-        )}
-
-        {messages.map((m) => (
-          <MessageBubble key={m.id} role={m.role} content={m.content} streaming={m.streaming} />
-        ))}
-
-        {toolActivity && <TypingIndicator label={toolActivity} />}
-        {isLoading && !toolActivity && messages[messages.length - 1]?.content === '' && (
-          <TypingIndicator label="Thinking…" />
-        )}
-
-        <div ref={bottomRef} />
+      <div className="flex-1 overflow-y-auto py-4 space-y-3">
+        <div className="max-w-2xl mx-auto px-4 space-y-3">
+          {messages.map((m) => (
+            <MessageBubble key={m.id} role={m.role} content={m.content} streaming={m.streaming} />
+          ))}
+          {toolActivity && <TypingIndicator label={toolActivity} />}
+          {isLoading && !toolActivity && messages[messages.length - 1]?.content === '' && (
+            <TypingIndicator label="Thinking…" />
+          )}
+          <div ref={bottomRef} />
+        </div>
       </div>
 
-      {/* Input */}
-      <div className="shrink-0 px-3 pb-4 pt-2" style={{ borderTop: '1px solid rgb(var(--c-border-subtle))' }}>
-        <ChatInput onSend={(msg, mentions) => sendMessage(msg, mentions)} disabled={isLoading} leagueId={leagueId} />
+      <div className="shrink-0 flex justify-center px-6 pb-5 pt-3" style={{ borderTop: '1px solid rgb(var(--c-border-subtle))' }}>
+        <div className="w-full max-w-2xl">
+          <ChatInput onSend={(msg, mentions) => sendMessage(msg, mentions)} disabled={isLoading} leagueId={leagueId} />
+        </div>
       </div>
     </div>
   )
