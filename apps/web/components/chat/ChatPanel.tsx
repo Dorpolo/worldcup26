@@ -14,6 +14,7 @@ interface Props {
   userPoints: number
   initialMessages?: Message[]
   hasAiKey: boolean
+  fullScreen?: boolean
 }
 
 const MIN_WIDTH = 280
@@ -33,7 +34,7 @@ const MODEL_LABELS: Record<AIConfig['model'], { label: string; hint: string }> =
 }
 
 export function ChatPanel(props: Props) {
-  const { leagueId, hasAiKey: initialHasKey } = props
+  const { leagueId, hasAiKey: initialHasKey, fullScreen = false } = props
   const [open, setOpen] = useState(true)
   const [width, setWidth] = useState(DEFAULT_WIDTH)
   const [showConfig, setShowConfig] = useState(false)
@@ -208,111 +209,85 @@ export function ChatPanel(props: Props) {
     }
   }, [])
 
-  return (
-    <>
-      {/* Collapsed strip */}
-      {!open && (
+  // ── Shared inner content ──────────────────────────────────────────────────
+  const panelInner = (
+    <div className="flex flex-col flex-1 min-w-0 overflow-hidden h-full">
+      {/* Header */}
+      <div
+        className="wc-panel-header shrink-0 flex items-center gap-2 px-3 py-2.5"
+        style={{ borderBottom: border }}
+      >
+        <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
+          style={{ background: 'linear-gradient(135deg, #d97757, #c8664a)', color: '#fff' }}>
+          D
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[12px] font-semibold truncate" style={{ color: text1 }}>Declan</p>
+        </div>
+
+        {/* Memory toggle */}
         <button
-          onClick={() => setOpen(true)}
-          className="shrink-0 flex flex-col items-center justify-center gap-3 w-10 transition-colors wc-chat-panel"
-          style={{ borderLeft: border, background: surface, color: text3 }}
-          title="Open Polo Market"
+          onClick={() => { setShowMemory((v) => !v); setShowHistory(false); setShowConfig(false) }}
+          className="relative flex items-center gap-1 text-[11px] px-1.5 py-1 rounded-md transition-all"
+          style={{
+            background: showMemory ? 'rgb(217 119 87 / 0.12)' : 'rgb(var(--c-overlay-xs))',
+            color: showMemory ? coral : text3,
+          }}
+          title="Memory"
         >
-          <span className="text-[10px] font-semibold uppercase tracking-widest rotate-[-90deg] whitespace-nowrap" style={{ color: coral }}>Polo Market</span>
-          <span className="text-base">›</span>
-        </button>
-      )}
-
-      {open && (
-        <div
-          className="shrink-0 flex chat-panel-enter wc-chat-panel"
-          style={{ width: `${width}px`, borderLeft: border, background: surface, position: 'relative' }}
-        >
-          {/* Drag handle */}
-          <div
-            onMouseDown={onMouseDown}
-            className="absolute left-0 top-0 bottom-0 w-1 z-10 group"
-            style={{ cursor: 'col-resize' }}
-          >
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-              style={{ background: 'rgb(217 119 87 / 0.35)' }} />
-          </div>
-
-          <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-            {/* Header */}
-            <div
-              className="wc-panel-header shrink-0 flex items-center gap-2 px-3 py-2.5"
-              style={{ borderBottom: border }}
+          🧠
+          {memoryCount > 0 && (
+            <span
+              className="text-[9px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center"
+              style={{ background: 'rgb(217 119 87)', color: '#fff', fontSize: '8px' }}
             >
-              <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
-                style={{ background: 'linear-gradient(135deg, #d97757, #c8664a)', color: '#fff' }}>
-                B
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-semibold truncate" style={{ color: text1 }}>Polo Market</p>
-              </div>
+              {memoryCount > 9 ? '9+' : memoryCount}
+            </span>
+          )}
+        </button>
 
-              {/* Memory toggle */}
-              <button
-                onClick={() => { setShowMemory((v) => !v); setShowHistory(false); setShowConfig(false) }}
-                className="relative flex items-center gap-1 text-[11px] px-1.5 py-1 rounded-md transition-all"
-                style={{
-                  background: showMemory ? 'rgb(217 119 87 / 0.12)' : 'rgb(var(--c-overlay-xs))',
-                  color: showMemory ? coral : text3,
-                }}
-                title="Memory"
-              >
-                🧠
-                {memoryCount > 0 && (
-                  <span
-                    className="text-[9px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center"
-                    style={{ background: 'rgb(217 119 87)', color: '#fff', fontSize: '8px' }}
-                  >
-                    {memoryCount > 9 ? '9+' : memoryCount}
-                  </span>
-                )}
-              </button>
+        {/* History toggle */}
+        <button
+          onClick={() => { setShowHistory((v) => !v); setShowMemory(false); setShowConfig(false) }}
+          className="text-[11px] px-1.5 py-1 rounded-md transition-all"
+          style={{
+            background: showHistory ? 'rgb(217 119 87 / 0.12)' : 'rgb(var(--c-overlay-xs))',
+            color: showHistory ? coral : text3,
+          }}
+          title="Conversation history"
+        >
+          ⎇
+        </button>
 
-              {/* History toggle */}
-              <button
-                onClick={() => { setShowHistory((v) => !v); setShowMemory(false); setShowConfig(false) }}
-                className="text-[11px] px-1.5 py-1 rounded-md transition-all"
-                style={{
-                  background: showHistory ? 'rgb(217 119 87 / 0.12)' : 'rgb(var(--c-overlay-xs))',
-                  color: showHistory ? coral : text3,
-                }}
-                title="Conversation history"
-              >
-                ⎇
-              </button>
+        {/* Key status dot */}
+        <div
+          className="w-1.5 h-1.5 rounded-full shrink-0"
+          title={hasKey ? 'Declan is ready' : 'Declan needs a key — click Config'}
+          style={{ background: hasKey ? 'rgb(63 185 80)' : 'rgb(240 160 48)' }}
+        />
 
-              {/* Key status dot */}
-              <div
-                className="w-1.5 h-1.5 rounded-full shrink-0"
-                title={hasKey ? 'Declan is ready' : 'Declan needs a key — click Config'}
-                style={{ background: hasKey ? 'rgb(63 185 80)' : 'rgb(240 160 48)' }}
-              />
+        <button
+          onClick={() => { setShowConfig((v) => !v); setShowHistory(false); setShowMemory(false) }}
+          className="flex items-center gap-1 text-[11px] px-2 py-1 rounded-md transition-all hover:opacity-90 font-medium"
+          style={{
+            background: showConfig ? 'rgb(217 119 87 / 0.15)' : 'rgb(217 119 87 / 0.08)',
+            border: showConfig ? '1px solid rgb(217 119 87 / 0.4)' : '1px solid rgb(217 119 87 / 0.2)',
+            color: coral,
+          }}
+        >
+          <span>⚙</span>
+          <span>Config</span>
+          {!hasKey && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 ml-0.5" />}
+        </button>
 
-              <button
-                onClick={() => { setShowConfig((v) => !v); setShowHistory(false); setShowMemory(false) }}
-                className="flex items-center gap-1 text-[11px] px-2 py-1 rounded-md transition-all hover:opacity-90 font-medium"
-                style={{
-                  background: showConfig ? 'rgb(217 119 87 / 0.15)' : 'rgb(217 119 87 / 0.08)',
-                  border: showConfig ? '1px solid rgb(217 119 87 / 0.4)' : '1px solid rgb(217 119 87 / 0.2)',
-                  color: coral,
-                }}
-              >
-                <span>⚙</span>
-                <span>Config</span>
-                {!hasKey && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 ml-0.5" />}
-              </button>
-
-              <button
-                onClick={() => setOpen(false)}
-                className="text-[16px] leading-none transition-colors px-0.5"
-                style={{ color: text3 }}
-              >›</button>
-            </div>
+        {!fullScreen && (
+          <button
+            onClick={() => setOpen(false)}
+            className="text-[16px] leading-none transition-colors px-0.5"
+            style={{ color: text3 }}
+          >›</button>
+        )}
+      </div>
 
             {/* Config drawer */}
             {showConfig && (
@@ -496,20 +471,74 @@ export function ChatPanel(props: Props) {
               />
             )}
 
-            {/* Chat window — key resets on conversation switch */}
-            <div className="flex-1 overflow-hidden">
-              <ChatWindow
-                key={activeConversationId}
-                {...props}
-                aiConfig={config}
-                conversationId={activeConversationId}
-                onTitleGenerated={handleTitleGenerated}
-                initialMessages={[]}
-              />
-            </div>
+      {/* Chat window — key resets on conversation switch */}
+      <div className="flex-1 overflow-hidden">
+        <ChatWindow
+          key={activeConversationId}
+          {...props}
+          aiConfig={config}
+          conversationId={activeConversationId}
+          onTitleGenerated={handleTitleGenerated}
+          initialMessages={[]}
+        />
+      </div>
+    </div>
+  )
+
+  // ── Full-screen mode (chat main page) ─────────────────────────────────────
+  if (fullScreen) {
+    return (
+      <div className="flex flex-col h-full w-full relative" style={{ background: surface }}>
+        {panelInner}
+        {showHistory && (
+          <ConversationHistoryDrawer
+            conversations={conversations}
+            activeId={activeConversationId}
+            onSelect={(id) => { setActiveConversationId(id); setShowHistory(false) }}
+            onRename={renameConversation}
+            onDelete={deleteConversation}
+            onClose={() => setShowHistory(false)}
+          />
+        )}
+        {showMemory && (
+          <MemoryPanel leagueId={leagueId} onClose={() => setShowMemory(false)} />
+        )}
+      </div>
+    )
+  }
+
+  // ── Sidebar mode (non-chat pages) ─────────────────────────────────────────
+  return (
+    <>
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          className="shrink-0 flex flex-col items-center justify-center gap-3 w-10 transition-colors wc-chat-panel"
+          style={{ borderLeft: border, background: surface, color: text3 }}
+          title="Ask Declan"
+        >
+          <span className="text-[10px] font-semibold uppercase tracking-widest rotate-[-90deg] whitespace-nowrap" style={{ color: coral }}>Declan</span>
+          <span className="text-base">›</span>
+        </button>
+      )}
+
+      {open && (
+        <div
+          className="shrink-0 flex chat-panel-enter wc-chat-panel"
+          style={{ width: `${width}px`, borderLeft: border, background: surface, position: 'relative' }}
+        >
+          {/* Drag handle */}
+          <div
+            onMouseDown={onMouseDown}
+            className="absolute left-0 top-0 bottom-0 w-1 z-10 group"
+            style={{ cursor: 'col-resize' }}
+          >
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{ background: 'rgb(217 119 87 / 0.35)' }} />
           </div>
 
-          {/* Overlay panels */}
+          {panelInner}
+
           {showHistory && (
             <ConversationHistoryDrawer
               conversations={conversations}
@@ -520,12 +549,8 @@ export function ChatPanel(props: Props) {
               onClose={() => setShowHistory(false)}
             />
           )}
-
           {showMemory && (
-            <MemoryPanel
-              leagueId={leagueId}
-              onClose={() => setShowMemory(false)}
-            />
+            <MemoryPanel leagueId={leagueId} onClose={() => setShowMemory(false)} />
           )}
         </div>
       )}

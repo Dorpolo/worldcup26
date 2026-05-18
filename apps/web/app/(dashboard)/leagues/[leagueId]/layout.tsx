@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { connectDB, UserModel, LeagueModel, MembershipModel } from '@worldcup26/db'
 import Link from 'next/link'
 import { LeagueTabNav } from '@/components/shared/LeagueTabNav'
+import { LeagueShell } from '@/components/shared/LeagueShell'
 
 interface Props {
   children: React.ReactNode
@@ -103,10 +104,18 @@ export default async function LeagueLayout({ children, params }: Props) {
         )}
       </nav>
 
-      {/* ── Main content ────────────────────────────────────────── */}
-      <div className="flex-1 overflow-hidden">
+      {/* ── Main content (LeagueShell adds Declan sidebar on non-chat pages) ── */}
+      <LeagueShell
+        leagueSlug={params.leagueId}
+        leagueId={String(league._id)}
+        leagueName={league.name}
+        userName={user.name}
+        userRank={membership.rank ?? 0}
+        userPoints={membership.totalPoints ?? 0}
+        hasAiKey={!!user.aiApiKey}
+      >
         {children}
-      </div>
+      </LeagueShell>
 
     </div>
   )

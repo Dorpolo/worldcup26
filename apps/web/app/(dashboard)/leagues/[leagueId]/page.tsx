@@ -1,7 +1,7 @@
 import { auth } from '@/auth'
 import { redirect, notFound } from 'next/navigation'
 import { connectDB, UserModel, LeagueModel, MembershipModel } from '@worldcup26/db'
-import { ChatWindow } from '@/components/chat/ChatWindow'
+import { ChatPanel } from '@/components/chat/ChatPanel'
 
 interface Props { params: { leagueId: string } }
 
@@ -24,14 +24,14 @@ export default async function LeagueChatPage({ params }: Props) {
   if (!membership) redirect('/leagues')
 
   return (
-    <div className="h-full w-full flex flex-col">
-      <ChatWindow
-        leagueId={String(league._id)}
-        leagueName={league.name}
-        userName={user.name}
-        userRank={membership.rank ?? 0}
-        userPoints={membership.totalPoints ?? 0}
-      />
-    </div>
+    <ChatPanel
+      leagueId={String(league._id)}
+      leagueName={league.name}
+      userName={user.name}
+      userRank={membership.rank ?? 0}
+      userPoints={membership.totalPoints ?? 0}
+      hasAiKey={!!user.aiApiKey}
+      fullScreen
+    />
   )
 }
