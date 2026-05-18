@@ -185,12 +185,14 @@ export function ChatWindow({
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-3">
         {messages.length === 0 && (
-          <WelcomeMessage
-            userName={userName}
-            leagueName={leagueName}
-            userRank={userRank}
-            userPoints={userPoints}
-          />
+          <div className="flex items-center justify-center h-full min-h-[200px]">
+            <WelcomeMessage
+              userName={userName}
+              leagueName={leagueName}
+              userRank={userRank}
+              userPoints={userPoints}
+            />
+          </div>
         )}
 
         {messages.map((m) => (
@@ -227,17 +229,9 @@ function WelcomeMessage({ userName, leagueName, userRank, userPoints }: {
       >
         D
       </div>
-      <div className="flex items-center gap-3 mt-1">
-        {['Ask', 'Act', 'Bet'].map((word) => (
-          <span
-            key={word}
-            className="text-[13px] font-semibold tracking-wide uppercase"
-            style={{ color: 'rgb(217 119 87)' }}
-          >
-            {word}
-          </span>
-        ))}
-      </div>
+      <p className="text-[13px] font-semibold tracking-wide mt-1" style={{ color: 'rgb(217 119 87)' }}>
+        Ask Declan.
+      </p>
     </div>
   )
 }
