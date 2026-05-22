@@ -180,18 +180,44 @@ export function ChatWindow({
     }
   }, [isLoading, leagueId, conversationId, aiConfig])
 
+  const SUGGESTIONS = [
+    `Who's top of ${leagueName}?`,
+    'What should I predict today?',
+    'Any injury news before the next match?',
+    'How did I do last round?',
+  ]
+
   /* ── Empty state: avatar + label + input all vertically centered ── */
   if (messages.length === 0) {
     return (
-      <div className="flex flex-col h-full items-center justify-center px-6 gap-5">
+      <div className="flex flex-col h-full items-center justify-center px-8 gap-6">
         <WelcomeMessage
           userName={userName}
           leagueName={leagueName}
           userRank={userRank}
           userPoints={userPoints}
         />
-        <div className="w-full max-w-2xl">
+
+        <div className="w-full max-w-3xl flex flex-col gap-3">
           <ChatInput onSend={(msg, mentions) => sendMessage(msg, mentions)} disabled={isLoading} leagueId={leagueId} />
+
+          {/* Suggested prompts */}
+          <div className="flex flex-wrap gap-2 justify-center">
+            {SUGGESTIONS.map((s) => (
+              <button
+                key={s}
+                onClick={() => sendMessage(s, [])}
+                className="text-[11px] px-3 py-1.5 rounded-full transition-all hover:opacity-80"
+                style={{
+                  background: 'rgb(var(--c-overlay-sm))',
+                  border: '1px solid rgb(var(--c-border-subtle))',
+                  color: 'rgb(var(--c-text-3))',
+                }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     )
