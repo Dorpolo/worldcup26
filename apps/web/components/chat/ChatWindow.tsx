@@ -72,6 +72,23 @@ export function ChatWindow({
     setIsLoading(true)
     setToolActivity(null)
 
+    // Auto-title on first exchange — call immediately for fast UX
+    if (isFirstExchange.current && conversationId && onTitleGenerated) {
+      isFirstExchange.current = false
+      fetch(`/api/chat/conversations/${conversationId}/auto-title`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstMessage: displayText.slice(0, 300), firstResponse: '' }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.ok && data.title) {
+            onTitleGenerated(conversationId, data.title)
+          }
+        })
+        .catch(() => {})
+    }
+
     const assistantId = crypto.randomUUID()
     setMessages((prev) => [
       ...prev,
@@ -160,23 +177,7 @@ export function ChatWindow({
       setMessages((prev) =>
         prev.map((m) => (m.id === assistantId ? { ...m, streaming: false } : m))
       )
-
-      // Auto-title on first exchange
-      if (isFirstExchange.current && conversationId && finalResponse && onTitleGenerated) {
-        isFirstExchange.current = false
-        fetch(`/api/chat/conversations/${conversationId}/auto-title`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ firstMessage: displayText.slice(0, 300), firstResponse: finalResponse.slice(0, 300) }),
-        })
-          .then((r) => r.json())
-          .then((data) => {
-            if (data.ok && data.title) {
-              onTitleGenerated(conversationId, data.title)
-            }
-          })
-          .catch(() => {})
-      }
+      // Note: isFirstExchange flag was already set to false when auto-title was called
     }
   }, [isLoading, leagueId, conversationId, aiConfig])
 
@@ -190,7 +191,7 @@ export function ChatWindow({
   /* ── Empty state: avatar + label + input all vertically centered ── */
   if (messages.length === 0) {
     return (
-      <div className="flex flex-col h-full items-center justify-center px-8 gap-6">
+      <div className="flex flex-col h-full items-center justify-center px-4 sm:px-8 gap-4 sm:gap-6">
         <WelcomeMessage
           userName={userName}
           leagueName={leagueName}
@@ -202,12 +203,12 @@ export function ChatWindow({
           <ChatInput onSend={(msg, mentions) => sendMessage(msg, mentions)} disabled={isLoading} leagueId={leagueId} />
 
           {/* Suggested prompts */}
-          <div className="flex flex-wrap gap-2 justify-center">
+          <div className="flex flex-wrap gap-1 sm:gap-2 justify-center">
             {SUGGESTIONS.map((s) => (
               <button
                 key={s}
                 onClick={() => sendMessage(s, [])}
-                className="text-[11px] px-3 py-1.5 rounded-full transition-all hover:opacity-80"
+                className="text-[10px] sm:text-[11px] px-2 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all hover:opacity-80"
                 style={{
                   background: 'rgb(var(--c-overlay-sm))',
                   border: '1px solid rgb(var(--c-border-subtle))',
@@ -226,11 +227,14 @@ export function ChatWindow({
   /* ── Active chat: messages + centered input pinned to bottom ── */
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto py-4 space-y-3">
-        <div className="max-w-2xl mx-auto px-4 space-y-3">
-          {messages.map((m) => (
-            <MessageBubble key={m.id} role={m.role} content={m.content} streaming={m.streaming} />
-          ))}
+      <div className="flex-1 overflow-y-auto py-2 sm:py-4">
+        <div className="max-w-2xl mx-auto px-3 sm:px-4 flex flex-col justify-end min-h-full space-y-3">
+          {messages.map((m) =>
+            // Skip the empty streaming placeholder — TypingIndicator covers that state
+            m.streaming && m.content === '' ? null : (
+              <MessageBubble key={m.id} role={m.role} content={m.content} streaming={m.streaming} />
+            )
+          )}
           {toolActivity && <TypingIndicator label={toolActivity} />}
           {isLoading && !toolActivity && messages[messages.length - 1]?.content === '' && (
             <TypingIndicator label="Thinking…" />
@@ -239,7 +243,7 @@ export function ChatWindow({
         </div>
       </div>
 
-      <div className="shrink-0 flex justify-center px-6 pb-5 pt-3" style={{ borderTop: '1px solid rgb(var(--c-border-subtle))' }}>
+      <div className="shrink-0 flex justify-center px-3 sm:px-6 pb-3 sm:pb-5 pt-2 sm:pt-3" style={{ borderTop: '1px solid rgb(var(--c-border-subtle))' }}>
         <div className="w-full max-w-2xl">
           <ChatInput onSend={(msg, mentions) => sendMessage(msg, mentions)} disabled={isLoading} leagueId={leagueId} />
         </div>

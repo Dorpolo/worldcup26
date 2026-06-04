@@ -20,7 +20,6 @@ from langchain_anthropic import ChatAnthropic
 
 from auth import verify_token
 from graph import get_compiled_graph
-from memory import load_history, save_message
 from tools.skill_tool_factory import build_skill_tools
 from tools.mcp_tool_loader import load_mcp_tools
 
@@ -87,17 +86,13 @@ async def chat(request: Request, body: ChatRequest, _token: str = Depends(verify
 
     graph = get_compiled_graph(extra_tools)
 
-    # Load conversation history (scoped by conversationId if provided)
-    history = await load_history(body.user_id, body.league_id, body.conversation_id)
-
-    # Persist the user message
-    await save_message(body.user_id, body.league_id, "user", body.message, body.conversation_id)
-
     # Optional per-user API key from header or body
     user_ai_key = request.headers.get("x-user-ai-key", "") or body.ai_api_key
 
+    # State is initialized with only the new user message
+    # Checkpointer automatically loads prior messages from thread_id
     initial_state = {
-        "messages": history + [HumanMessage(content=body.message)],
+        "messages": [HumanMessage(content=body.message)],
         "user_id": body.user_id,
         "league_id": body.league_id,
         "conversation_id": body.conversation_id,
@@ -108,7 +103,9 @@ async def chat(request: Request, body: ChatRequest, _token: str = Depends(verify
     async def event_stream():
         full_response = ""
         try:
-            async for event in graph.astream_events(initial_state, version="v2"):
+            # Stream with checkpointer config — thread_id is the conversation_id
+            config = {"configurable": {"thread_id": body.conversation_id}} if body.conversation_id else {}
+            async for event in graph.astream_events(initial_state, config=config, version="v2"):
                 kind = event["event"]
 
                 if kind == "on_chat_model_stream":
@@ -138,11 +135,7 @@ async def chat(request: Request, body: ChatRequest, _token: str = Depends(verify
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'content': str(e)})}\n\n"
         finally:
-            if full_response:
-                await save_message(
-                    body.user_id, body.league_id, "assistant",
-                    full_response, body.conversation_id,
-                )
+            # Checkpointer automatically persists state — no manual save needed
             yield f"data: {json.dumps({'type': 'done'})}\n\n"
 
     return StreamingResponse(

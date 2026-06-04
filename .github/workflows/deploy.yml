@@ -65,7 +65,7 @@ jobs:
     steps:
       - name: Check web is up
         run: |
-          URL="${{ needs.setup.outputs.environment == 'production' && 'https://bobby.gg' || 'https://staging.bobby.gg' }}"
+          URL="${{ needs.setup.outputs.environment == 'production' && 'https://polomarket.gg' || 'https://staging.polomarket.gg' }}"
           echo "Checking $URL"
           for i in {1..5}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL/api/health" || echo "000")

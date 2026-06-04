@@ -87,10 +87,16 @@ services:
     environment:
       MONGODB_URI: mongodb://mongo:27017/worldcup26
       INTERNAL_API_URL: http://web:3000
-      # LangSmith tracing — set these in .env to enable
+      # LangSmith tracing
+      LANGSMITH_TRACING: ${LANGSMITH_TRACING:-true}
+      LANGSMITH_ENDPOINT: ${LANGSMITH_ENDPOINT:-https://eu.api.smith.langchain.com}
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:-}
+      LANGSMITH_PROJECT: ${LANGSMITH_PROJECT:-world-cup-26}
+      # Legacy aliases
+      LANGCHAIN_TRACING_V2: ${LANGCHAIN_TRACING_V2:-true}
+      LANGCHAIN_ENDPOINT: ${LANGCHAIN_ENDPOINT:-https://eu.api.smith.langchain.com}
       LANGCHAIN_API_KEY: ${LANGCHAIN_API_KEY:-}
-      LANGCHAIN_TRACING_V2: ${LANGCHAIN_TRACING_V2:-false}
-      LANGCHAIN_PROJECT: ${LANGCHAIN_PROJECT:-worldcup26}
+      LANGCHAIN_PROJECT: ${LANGCHAIN_PROJECT:-world-cup-26}
     depends_on:
       - mongo
       - web

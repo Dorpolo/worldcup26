@@ -13,6 +13,8 @@ async function apiFetch<T>(endpoint: string, params: Record<string, string | num
   ).toString()
   const url = `${BASE_URL}/${endpoint}?${qs}`
 
+  console.log(`[FOOTBALL-API] Fetching ${endpoint}`, { url, apiKey: API_KEY ? 'SET' : 'MISSING' })
+
   const res = await fetch(url, {
     headers: {
       'x-apisports-key': API_KEY,
@@ -20,8 +22,11 @@ async function apiFetch<T>(endpoint: string, params: Record<string, string | num
     next: { revalidate: 60 }, // Next.js fetch cache: 60s
   })
 
+  console.log(`[FOOTBALL-API] Response status: ${res.status}`)
+
   if (!res.ok) throw new Error(`API-Football ${endpoint} returned ${res.status}`)
   const json = await res.json()
+  console.log(`[FOOTBALL-API] Parsed response, response.length=${(json.response as any[])?.length ?? 'N/A'}`)
   return json.response as T
 }
 
@@ -78,5 +83,91 @@ export async function fetchTopScorers() {
   })
 
   await r.setex(cacheKey, 3600, data)
+  return data
+}
+
+// ─── New endpoints for enhanced predictions ────────────────────────────────
+
+export async function fetchStandings() {
+  const r = getRedis()
+  const cacheKey = `apifootball:standings:${WC_SEASON}`
+  const cached = await r.get<unknown>(cacheKey)
+  if (cached) return cached
+
+  const data = await apiFetch<unknown>('standings', {
+    league: WC_LEAGUE_ID,
+    season: WC_SEASON,
+  })
+
+  // Cache for 30 minutes as standings update less frequently
+  await r.setex(cacheKey, 1800, data)
+  return data
+}
+
+export async function fetchTeams() {
+  const r = getRedis()
+  const cacheKey = `apifootball:teams:${WC_SEASON}`
+  const cached = await r.get<unknown[]>(cacheKey)
+  if (cached) return cached
+
+  const data = await apiFetch<unknown[]>('teams', {
+    league: WC_LEAGUE_ID,
+    season: WC_SEASON,
+  })
+
+  // Cache for 1 hour
+  await r.setex(cacheKey, 3600, data)
+  return data
+}
+
+export async function fetchPlayers(teamId: number) {
+  const r = getRedis()
+  const cacheKey = `apifootball:players:team${teamId}:${WC_SEASON}`
+  const cached = await r.get<unknown[]>(cacheKey)
+  if (cached) return cached
+
+  const data = await apiFetch<unknown[]>('players', {
+    league: WC_LEAGUE_ID,
+    season: WC_SEASON,
+    team: teamId,
+  })
+
+  // Cache for 6 hours
+  await r.setex(cacheKey, 21600, data)
+  return data
+}
+
+export async function fetchFixtureDetails(fixtureId: number) {
+  const r = getRedis()
+  const cacheKey = `apifootball:fixture:${fixtureId}`
+  const cached = await r.get<unknown>(cacheKey)
+  if (cached) return cached
+
+  const data = await apiFetch<unknown>('fixtures', {
+    id: fixtureId,
+  })
+
+  // Cache for 30 minutes for finished matches, 5 minutes for live
+  const cacheTime = 1800
+  await r.setex(cacheKey, cacheTime, data)
+  return data
+}
+
+export async function fetchLatestMatches(limit = 5) {
+  const r = getRedis()
+  const cacheKey = `apifootball:latestmatches:${limit}`
+  const cached = await r.get<unknown[]>(cacheKey)
+  if (cached) return cached
+
+  // Fetch all fixtures and get the latest ones
+  const data = await apiFetch<unknown[]>('fixtures', {
+    league: WC_LEAGUE_ID,
+    season: WC_SEASON,
+    status: 'FT', // Finished matches
+  })
+
+  // For now, just cache and return raw data
+  // Frontend will sort by date
+  await r.setex(cacheKey, 600, data)
   return data
 }

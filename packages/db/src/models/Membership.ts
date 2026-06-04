@@ -14,6 +14,9 @@ export interface MembershipDocument extends Document {
   role: 'owner' | 'member'
   totalPoints: number
   rank: number
+  exactMatches?: number           // Count of exact score predictions
+  gamesPlayed?: number            // Count of predictions submitted
+  polyMarketBonusPoints?: number  // Bonus points from Polly Market bets
   pointsHistory: PointsHistoryEntry[]
   joinedAt: Date
 }
@@ -35,6 +38,9 @@ const MembershipSchema = new Schema<MembershipDocument>({
   role: { type: String, enum: ['owner', 'member'], required: true },
   totalPoints: { type: Number, default: 0 },
   rank: { type: Number, default: 0 },
+  exactMatches: { type: Number, default: 0 },
+  gamesPlayed: { type: Number, default: 0 },
+  polyMarketBonusPoints: { type: Number, default: 0 },
   pointsHistory: { type: [PointsHistorySchema], default: [] },
   joinedAt: { type: Date, default: Date.now },
 })

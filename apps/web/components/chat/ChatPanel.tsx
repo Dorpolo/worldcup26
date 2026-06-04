@@ -17,9 +17,10 @@ interface Props {
   fullScreen?: boolean
 }
 
-const MIN_WIDTH = 280
-const MAX_WIDTH = 720
-const DEFAULT_WIDTH = 420
+// Responsive width constraints
+const MIN_WIDTH = 240      // 240px minimum for very small screens
+const MAX_WIDTH = 720      // 720px maximum for large screens
+const DEFAULT_WIDTH = 380  // 380px default (adjusted for better mobile experience)
 
 export interface AIConfig {
   model: 'claude-haiku' | 'claude-sonnet' | 'gpt-4o-mini'
@@ -471,16 +472,25 @@ export function ChatPanel(props: Props) {
               />
             )}
 
-      {/* Chat window — key resets on conversation switch */}
+      {/* Chat window — key resets on conversation switch.
+          Don't render until a conversationId is set to prevent sending
+          messages with an empty ID (which would bypass history isolation). */}
       <div className="flex-1 overflow-hidden">
-        <ChatWindow
-          key={activeConversationId}
-          {...props}
-          aiConfig={config}
-          conversationId={activeConversationId}
-          onTitleGenerated={handleTitleGenerated}
-          initialMessages={[]}
-        />
+        {activeConversationId ? (
+          <ChatWindow
+            key={activeConversationId}
+            {...props}
+            aiConfig={config}
+            conversationId={activeConversationId}
+            onTitleGenerated={handleTitleGenerated}
+            initialMessages={[]}
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin"
+              style={{ borderColor: 'rgb(217 119 87)', borderTopColor: 'transparent' }} />
+          </div>
+        )}
       </div>
     </div>
   )
@@ -488,7 +498,7 @@ export function ChatPanel(props: Props) {
   // ── Full-screen mode (chat main page) ─────────────────────────────────────
   if (fullScreen) {
     return (
-      <div className="flex flex-col h-full w-full relative" style={{ background: surface }}>
+      <div className="flex flex-col flex-1 min-h-0 relative" style={{ background: surface }}>
         {panelInner}
         {showHistory && (
           <ConversationHistoryDrawer
@@ -513,7 +523,7 @@ export function ChatPanel(props: Props) {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="shrink-0 flex flex-col items-center justify-center gap-3 w-10 transition-colors wc-chat-panel"
+          className="hidden sm:shrink-0 sm:flex flex-col items-center justify-center gap-3 w-10 transition-colors wc-chat-panel"
           style={{ borderLeft: border, background: surface, color: text3 }}
           title="Ask Declan"
         >
@@ -524,8 +534,8 @@ export function ChatPanel(props: Props) {
 
       {open && (
         <div
-          className="shrink-0 flex chat-panel-enter wc-chat-panel"
-          style={{ width: `${width}px`, borderLeft: border, background: surface, position: 'relative' }}
+          className="shrink-0 flex chat-panel-enter wc-chat-panel hidden sm:flex"
+          style={{ width: `${Math.min(width, Math.max(MIN_WIDTH, window?.innerWidth ? window.innerWidth - 100 : DEFAULT_WIDTH))}px`, borderLeft: border, background: surface, position: 'relative' }}
         >
           {/* Drag handle */}
           <div

@@ -43,11 +43,11 @@ export default async function LeagueLayout({ children, params }: Props) {
   const base = `/leagues/${params.leagueId}`
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex flex-1 overflow-hidden min-h-0 flex-col lg:flex-row">
 
-      {/* ── Vertical league nav ─────────────────────────────────── */}
+      {/* ── Vertical league nav (hidden on mobile) ─────────────────────────────── */}
       <nav
-        className="w-44 shrink-0 flex flex-col"
+        className="hidden lg:flex lg:w-44 shrink-0 flex-col"
         style={{
           borderRight: '1px solid rgb(var(--c-border-subtle))',
           background: 'rgb(var(--c-bg-sidebar, var(--bg-sidebar)))',
@@ -113,6 +113,9 @@ export default async function LeagueLayout({ children, params }: Props) {
         userRank={membership.rank ?? 0}
         userPoints={membership.totalPoints ?? 0}
         hasAiKey={!!user.aiApiKey}
+        navTabs={NAV_TABS}
+        base={base}
+        isOwner={isOwner}
       >
         {children}
       </LeagueShell>

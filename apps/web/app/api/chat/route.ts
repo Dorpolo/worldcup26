@@ -56,7 +56,8 @@ export async function POST(req: NextRequest) {
   const fullUser = await UserModel.findById((user as any)._id).lean() as any
   const userAiKey = fullUser?.aiApiKey ?? ''
 
-  // Build mention context appended to the message
+  // Build mention context appended to the message.
+  // IMPORTANT: only include text/ID fields — never image URLs (flags, avatars, logos).
   const { mentions } = parsed.data
   const mentionContext = mentions.length > 0
     ? '\n\n[Mentioned context — use these IDs when calling tools]\n' + mentions.map((m) => {
@@ -66,10 +67,16 @@ export async function POST(req: NextRequest) {
           return `@${m.label} → user_id: ${m.id}${rank ? ` (Rank #${rank}, ${pts} pts)` : ''}`
         }
         if (m.type === 'match') {
-          const home = (m.meta as any).homeTeam ?? (m.meta as any).home ?? ''
-          const away = (m.meta as any).awayTeam ?? (m.meta as any).away ?? ''
+          const home = (m.meta as any).homeTeam ?? ''
+          const away = (m.meta as any).awayTeam ?? ''
           const status = (m.meta as any).status ?? ''
-          return `@${m.label} → match_id: ${m.id}${home ? ` (${home} vs ${away}, ${status})` : ''}`
+          const stage = (m.meta as any).stage ?? ''
+          // Deliberately exclude homeFlag, awayFlag, logo — image URLs waste context
+          return `@${m.label} → match_id: ${m.id}` +
+            (home ? ` (${home} vs ${away}` : '') +
+            (stage ? `, ${stage}` : '') +
+            (status ? `, ${status}` : '') +
+            (home ? ')' : '')
         }
         if (m.type === 'page') {
           return `@${m.label} → context: ${m.meta.description ?? m.id}`

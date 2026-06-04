@@ -34,10 +34,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="flex h-screen overflow-hidden flex-col lg:flex-row" style={{ background: 'rgb(var(--bg))' }}>
-      {/* ── Left Sidebar (hidden on mobile) ────────────────────────────────────────── */}
+    <div className="flex h-screen overflow-hidden flex-col sm:flex-row" style={{ background: 'rgb(var(--bg))' }}>
+      {/* ── Left Sidebar (hidden on mobile, visible on sm+) ────────────────────────────────────────── */}
       <aside
-        className="wc-sidebar hidden lg:flex lg:w-56 shrink-0 flex flex-col"
+        className="wc-sidebar hidden sm:flex sm:w-48 lg:w-56 shrink-0 flex flex-col"
         style={{
           background: 'rgb(var(--bg-sidebar))',
           borderRight: '1px solid rgb(var(--border-subtle))',
@@ -46,7 +46,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         {/* Logo */}
         <Link
           href="/leagues"
-          className="flex items-center gap-2.5 px-4 py-4 group"
+          className="flex items-center gap-2.5 px-3 sm:px-4 py-4 group"
         >
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0 font-bold"
@@ -55,10 +55,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
             ⚽
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold tracking-tight" style={{ color: 'rgb(var(--text-1))' }}>
+            <p className="text-xs sm:text-sm font-semibold tracking-tight" style={{ color: 'rgb(var(--text-1))' }}>
               Polo Market
             </p>
-            <p className="text-[10px] font-medium uppercase tracking-widest" style={{ color: 'rgb(var(--text-3))' }}>
+            <p className="text-[9px] sm:text-[10px] font-medium uppercase tracking-widest" style={{ color: 'rgb(var(--text-3))' }}>
               World Cup 2026
             </p>
           </div>
@@ -70,7 +70,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         {/* League list */}
         <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
           <p
-            className="text-[10px] font-semibold uppercase tracking-widest px-2 pb-1.5"
+            className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest px-2 pb-1.5"
             style={{ color: 'rgb(var(--text-3))' }}
           >
             My Leagues
@@ -84,7 +84,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               style={{ color: 'rgb(var(--text-2))' }}
             >
               <div
-                className="w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden"
+                className="w-6 sm:w-7 h-6 sm:h-7 rounded-md flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden"
                 style={{ background: 'rgb(var(--surface-2))' }}
               >
                 {league.avatar ? (
@@ -94,10 +94,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-medium truncate leading-tight" style={{ color: 'rgb(var(--text-1))' }}>
+                <p className="text-[12px] sm:text-[13px] font-medium truncate leading-tight" style={{ color: 'rgb(var(--text-1))' }}>
                   {league.name}
                 </p>
-                <p className="text-[11px] leading-tight mt-0.5" style={{ color: 'rgb(var(--text-3))' }}>
+                <p className="text-[10px] sm:text-[11px] leading-tight mt-0.5" style={{ color: 'rgb(var(--text-3))' }}>
                   {league.rank ? `#${league.rank} · ` : ''}{league.points} pts
                 </p>
               </div>
@@ -110,18 +110,18 @@ export default async function DashboardLayout({ children }: { children: React.Re
             style={{ color: 'rgb(var(--text-3))' }}
           >
             <div
-              className="w-7 h-7 rounded-md flex items-center justify-center text-base shrink-0"
+              className="w-6 sm:w-7 h-6 sm:h-7 rounded-md flex items-center justify-center text-base shrink-0"
               style={{ border: '1.5px dashed rgb(var(--border-subtle))' }}
             >
               +
             </div>
-            <span className="text-[13px]">New league</span>
+            <span className="text-[12px] sm:text-[13px]">New league</span>
           </Link>
         </nav>
 
         {/* User footer */}
         <div
-          className="px-3 py-3"
+          className="px-2 sm:px-3 py-3"
           style={{ borderTop: '1px solid rgb(var(--border-subtle))' }}
         >
           <Link
@@ -129,7 +129,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             className="flex items-center gap-2.5 w-full rounded-lg px-1 py-1 transition-opacity hover:opacity-80"
           >
             <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 overflow-hidden"
+              className="w-6 sm:w-7 h-6 sm:h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 overflow-hidden"
               style={{ background: 'rgb(217 119 87 / 0.2)', color: 'rgb(217 119 87)' }}
             >
               {userData.avatar ? (
@@ -138,7 +138,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 userData.initials
               )}
             </div>
-            <p className="text-[13px] font-medium flex-1 min-w-0 truncate" style={{ color: 'rgb(var(--text-2))' }}>
+            <p className="text-[12px] sm:text-[13px] font-medium flex-1 min-w-0 truncate" style={{ color: 'rgb(var(--text-2))' }}>
               {userData.name}
             </p>
           </Link>

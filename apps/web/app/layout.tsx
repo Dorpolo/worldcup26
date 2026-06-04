@@ -23,6 +23,7 @@ export const metadata: Metadata = {
   title: 'Polo Market',
   description: 'Polo Market — your World Cup 2026 predictions league.',
   icons: { icon: '/favicon.ico' },
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

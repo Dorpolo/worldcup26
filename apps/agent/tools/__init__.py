@@ -3,6 +3,7 @@ from .match_tools import get_upcoming_matches, get_match_stats, get_all_matches
 from .prediction_tools import get_user_predictions, get_user_stats, get_match_distribution, submit_prediction
 from .search_tools import search_web
 from .memory_tools import save_memory
+from .tournament_tools import get_tournament_standings, get_market_probabilities, get_latest_match_results, get_top_scorers, search_players
 
 ALL_TOOLS = [
     get_league_table,
@@ -19,4 +20,9 @@ ALL_TOOLS = [
     submit_prediction,
     search_web,
     save_memory,
+    get_tournament_standings,
+    get_market_probabilities,
+    get_latest_match_results,
+    get_top_scorers,
+    search_players,
 ]
