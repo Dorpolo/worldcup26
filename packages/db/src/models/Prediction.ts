@@ -13,6 +13,11 @@ export interface PredictionDocument extends Document {
     correctResult: boolean
     correctTeamAdvancing: boolean
   }
+  topScorerPlayerId?: Schema.Types.ObjectId  // Reference to Player model
+  topScorerName?: string                      // Fallback if player not in DB
+  topScorerTeam?: string
+  polyMarketBet?: number                      // Points bet in Polly Market (0 = no bet)
+  polyMarketWon?: boolean                     // Did the market bet win
   submittedAt: Date
   updatedAt: Date
 }
@@ -36,6 +41,11 @@ const PredictionSchema = new Schema<PredictionDocument>(
     isLocked: { type: Boolean, default: false },
     pointsEarned: { type: Number },
     breakdown: { type: BreakdownSchema },
+    topScorerPlayerId: { type: Schema.Types.ObjectId, ref: 'Player' },
+    topScorerName: { type: String },
+    topScorerTeam: { type: String },
+    polyMarketBet: { type: Number, default: 0 },
+    polyMarketWon: { type: Boolean },
     submittedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }

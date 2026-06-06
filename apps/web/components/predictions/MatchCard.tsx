@@ -5,6 +5,7 @@ import { useMatchCountdown } from '@/hooks/useMatchCountdown'
 import { useLiveMatch } from '@/hooks/useLiveMatch'
 import { useDraggable } from '@/hooks/useDraggable'
 import { MatchDistributionModal } from './MatchDistributionModal'
+import { MarketProbabilitiesBar } from './MarketProbabilitiesBar'
 import { toast } from 'sonner'
 
 interface TeamInfo { name: string; shortName: string; flag?: string }
@@ -150,6 +151,21 @@ export function MatchCard({ matchId, leagueId, leagueSlug, homeTeam, awayTeam, k
             title={awayFullName}>{awayName}</p>
         </div>
       </div>
+
+      {/* Market probabilities */}
+      {status !== 'finished' && status !== 'live' && (
+        <div className="border-t" style={{ borderColor: 'rgb(var(--c-border-subtle))' }}>
+          <div className="pt-2">
+            <MarketProbabilitiesBar
+              matchId={matchId}
+              leagueId={leagueId}
+              homeTeam={homeFullName}
+              awayTeam={awayFullName}
+              status={status}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Bottom row */}
       <div className="flex items-center justify-between min-h-[24px]">

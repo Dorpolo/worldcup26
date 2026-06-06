@@ -6,26 +6,27 @@ import { subMinutes } from 'date-fns'
 
 // Owner-authenticated fixture sync — avoids exposing CRON_SECRET to the client
 export async function POST(req: NextRequest) {
-  const session = await auth()
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  try {
+    const session = await auth()
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-  await connectDB()
+    await connectDB()
 
-  const user = await UserModel.findOne({ email: session.user.email }).lean() as any
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await UserModel.findOne({ email: session.user.email }).lean() as any
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Must be an owner of at least one league
-  const ownerMembership = await MembershipModel.findOne({ userId: user._id, role: 'owner' }).lean()
-  if (!ownerMembership) {
-    return NextResponse.json({ error: 'Only league owners can sync fixtures' }, { status: 403 })
-  }
+    // Must be an owner of at least one league
+    const ownerMembership = await MembershipModel.findOne({ userId: user._id, role: 'owner' }).lean()
+    if (!ownerMembership) {
+      return NextResponse.json({ error: 'Only league owners can sync fixtures' }, { status: 403 })
+    }
 
-  const fixtures = await fetchAllFixtures() as any[]
-  let synced = 0
+    const fixtures = await fetchAllFixtures() as any[]
+    let synced = 0
 
-  for (const fixture of fixtures) {
+    for (const fixture of fixtures) {
     const f = fixture.fixture
     const teams = fixture.teams
     const goals = fixture.goals
@@ -77,7 +78,11 @@ export async function POST(req: NextRequest) {
     synced++
   }
 
-  return NextResponse.json({ ok: true, synced })
+    return NextResponse.json({ ok: true, synced })
+  } catch (err: any) {
+    console.error('Sync fixtures error:', err)
+    return NextResponse.json({ error: err.message || 'Failed to sync fixtures' }, { status: 500 })
+  }
 }
 
 function mapStatus(short: string): string {

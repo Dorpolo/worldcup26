@@ -1,4 +1,4 @@
-# Bobby — Railway configuration
+# Polo Market — Railway configuration
 # Each [[services]] entry maps to one Railway service.
 # Set root directory per service in the Railway dashboard to match the paths below.
 #
@@ -61,8 +61,8 @@ restartPolicyMaxRetries = 3
 #   INTERNAL_API_KEY     openssl rand -hex 32
 #   CRON_SECRET          openssl rand -hex 32
 #   NEXTAUTH_SECRET      openssl rand -base64 32
-#   NEXTAUTH_URL         https://bobby.gg
-#   NEXT_PUBLIC_APP_URL  https://bobby.gg
+#   NEXTAUTH_URL         https://polomarket.gg
+#   NEXT_PUBLIC_APP_URL  https://polomarket.gg
 #   RESEND_API_KEY
 #   GOOGLE_CLIENT_ID
 #   GOOGLE_CLIENT_SECRET

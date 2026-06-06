@@ -35,7 +35,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     meta: {
       rank: i + 1,
       points: m.totalPoints,
-      avatar: m.userId.avatar,
+      // Do NOT include avatar URLs in meta — prevents base64 image bloat in agent context
     },
   }))
 

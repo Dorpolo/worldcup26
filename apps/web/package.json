@@ -3,12 +3,13 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "next dev -p ${PORT:-3002}",
+    "dev": "next dev -p ${PORT:-3010}",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.98.0",
     "@auth/mongodb-adapter": "^3.2.0",
     "@base-ui/react": "^1.4.1",
     "@radix-ui/react-avatar": "^1.0.4",

@@ -72,6 +72,23 @@ export function ChatWindow({
     setIsLoading(true)
     setToolActivity(null)
 
+    // Auto-title on first exchange — call immediately for fast UX
+    if (isFirstExchange.current && conversationId && onTitleGenerated) {
+      isFirstExchange.current = false
+      fetch(`/api/chat/conversations/${conversationId}/auto-title`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstMessage: displayText.slice(0, 300), firstResponse: '' }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.ok && data.title) {
+            onTitleGenerated(conversationId, data.title)
+          }
+        })
+        .catch(() => {})
+    }
+
     const assistantId = crypto.randomUUID()
     setMessages((prev) => [
       ...prev,
@@ -160,54 +177,76 @@ export function ChatWindow({
       setMessages((prev) =>
         prev.map((m) => (m.id === assistantId ? { ...m, streaming: false } : m))
       )
-
-      // Auto-title on first exchange
-      if (isFirstExchange.current && conversationId && finalResponse && onTitleGenerated) {
-        isFirstExchange.current = false
-        fetch(`/api/chat/conversations/${conversationId}/auto-title`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ firstMessage: displayText.slice(0, 300), firstResponse: finalResponse.slice(0, 300) }),
-        })
-          .then((r) => r.json())
-          .then((data) => {
-            if (data.ok && data.title) {
-              onTitleGenerated(conversationId, data.title)
-            }
-          })
-          .catch(() => {})
-      }
+      // Note: isFirstExchange flag was already set to false when auto-title was called
     }
   }, [isLoading, leagueId, conversationId, aiConfig])
 
+  const SUGGESTIONS = [
+    `Who's top of ${leagueName}?`,
+    'What should I predict today?',
+    'Any injury news before the next match?',
+    'How did I do last round?',
+  ]
+
+  /* ── Empty state: avatar + label + input all vertically centered ── */
+  if (messages.length === 0) {
+    return (
+      <div className="flex flex-col h-full items-center justify-center px-4 sm:px-8 gap-4 sm:gap-6">
+        <WelcomeMessage
+          userName={userName}
+          leagueName={leagueName}
+          userRank={userRank}
+          userPoints={userPoints}
+        />
+
+        <div className="w-full max-w-3xl flex flex-col gap-3">
+          <ChatInput onSend={(msg, mentions) => sendMessage(msg, mentions)} disabled={isLoading} leagueId={leagueId} />
+
+          {/* Suggested prompts */}
+          <div className="flex flex-wrap gap-1 sm:gap-2 justify-center">
+            {SUGGESTIONS.map((s) => (
+              <button
+                key={s}
+                onClick={() => sendMessage(s, [])}
+                className="text-[10px] sm:text-[11px] px-2 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all hover:opacity-80"
+                style={{
+                  background: 'rgb(var(--c-overlay-sm))',
+                  border: '1px solid rgb(var(--c-border-subtle))',
+                  color: 'rgb(var(--c-text-3))',
+                }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  /* ── Active chat: messages + centered input pinned to bottom ── */
   return (
     <div className="flex flex-col h-full">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-3">
-        {messages.length === 0 && (
-          <WelcomeMessage
-            userName={userName}
-            leagueName={leagueName}
-            userRank={userRank}
-            userPoints={userPoints}
-          />
-        )}
-
-        {messages.map((m) => (
-          <MessageBubble key={m.id} role={m.role} content={m.content} streaming={m.streaming} />
-        ))}
-
-        {toolActivity && <TypingIndicator label={toolActivity} />}
-        {isLoading && !toolActivity && messages[messages.length - 1]?.content === '' && (
-          <TypingIndicator label="Thinking…" />
-        )}
-
-        <div ref={bottomRef} />
+      <div className="flex-1 overflow-y-auto py-2 sm:py-4">
+        <div className="max-w-2xl mx-auto px-3 sm:px-4 flex flex-col justify-end min-h-full space-y-3">
+          {messages.map((m) =>
+            // Skip the empty streaming placeholder — TypingIndicator covers that state
+            m.streaming && m.content === '' ? null : (
+              <MessageBubble key={m.id} role={m.role} content={m.content} streaming={m.streaming} />
+            )
+          )}
+          {toolActivity && <TypingIndicator label={toolActivity} />}
+          {isLoading && !toolActivity && messages[messages.length - 1]?.content === '' && (
+            <TypingIndicator label="Thinking…" />
+          )}
+          <div ref={bottomRef} />
+        </div>
       </div>
 
-      {/* Input */}
-      <div className="shrink-0 px-3 pb-4 pt-2" style={{ borderTop: '1px solid rgb(var(--c-border-subtle))' }}>
-        <ChatInput onSend={(msg, mentions) => sendMessage(msg, mentions)} disabled={isLoading} leagueId={leagueId} />
+      <div className="shrink-0 flex justify-center px-3 sm:px-6 pb-3 sm:pb-5 pt-2 sm:pt-3" style={{ borderTop: '1px solid rgb(var(--c-border-subtle))' }}>
+        <div className="w-full max-w-2xl">
+          <ChatInput onSend={(msg, mentions) => sendMessage(msg, mentions)} disabled={isLoading} leagueId={leagueId} />
+        </div>
       </div>
     </div>
   )
@@ -225,21 +264,10 @@ function WelcomeMessage({ userName, leagueName, userRank, userPoints }: {
         className="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold shadow-glow-coral"
         style={{ background: 'linear-gradient(135deg, #d97757, #c8664a)', color: 'rgb(var(--c-bg))' }}
       >
-        B
+        D
       </div>
-      <div className="space-y-1 max-w-[260px]">
-        <p className="text-[13px] font-semibold" style={{ color: 'rgb(var(--c-text-1))' }}>
-          Hey {userName.split(' ')[0]}! 👋
-        </p>
-        <p className="text-[12px] leading-relaxed" style={{ color: 'rgb(var(--c-text-3))' }}>
-          I'm Bobby. I'm in <span style={{ color: 'rgb(217 119 87)' }}>{leagueName}</span> too.
-          {userRank > 0
-            ? ` You're #${userRank} with ${userPoints} pts.`
-            : ' Let\'s go win this.'}
-        </p>
-      </div>
-      <p className="text-[11px]" style={{ color: 'rgb(var(--c-surface-3))' }}>
-        Drop any player or match card here to add context ↓
+      <p className="text-[13px] font-semibold tracking-wide mt-1" style={{ color: 'rgb(217 119 87)' }}>
+        Ask Declan.
       </p>
     </div>
   )

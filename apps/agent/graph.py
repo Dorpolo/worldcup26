@@ -8,9 +8,10 @@ import os
 from pathlib import Path
 
 from langchain_anthropic import ChatAnthropic
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import SystemMessage, ToolMessage
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode, tools_condition
+from langgraph.checkpoint.memory import MemorySaver
 
 from state import AgentState
 from tools import ALL_TOOLS
@@ -18,6 +19,10 @@ from tools import ALL_TOOLS
 MODEL           = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 DEFAULT_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 SYSTEM_TEMPLATE = (Path(__file__).parent / "prompts" / "system.txt").read_text()
+
+# Context limits — keep total prompt well under 200K tokens
+MAX_TOOL_OUTPUT_CHARS = 6_000   # truncate any single tool result beyond this
+MAX_CONTEXT_MESSAGES  = 16      # rolling window of messages sent to LLM
 
 # Cache: tool-fingerprint → compiled graph
 _graph_cache: dict[str, object] = {}
@@ -28,9 +33,35 @@ def _tool_fingerprint(extra_tools: list) -> str:
     return hashlib.md5(json.dumps(names).encode()).hexdigest()
 
 
+def _truncate_tool_outputs(messages: list) -> list:
+    """Cap oversized tool results so they don't blow up the context window."""
+    result = []
+    for m in messages:
+        if isinstance(m, ToolMessage):
+            content = str(m.content)
+            if len(content) > MAX_TOOL_OUTPUT_CHARS:
+                truncated = (
+                    content[:MAX_TOOL_OUTPUT_CHARS]
+                    + f"\n[...{len(content) - MAX_TOOL_OUTPUT_CHARS} chars truncated]"
+                )
+                m = ToolMessage(
+                    content=truncated,
+                    tool_call_id=m.tool_call_id,
+                    name=getattr(m, "name", ""),
+                )
+        result.append(m)
+    return result
+
+
 def build_graph(extra_tools: list = []):
     all_tools = ALL_TOOLS + extra_tools
-    tool_node  = ToolNode(all_tools)
+    raw_tool_node = ToolNode(all_tools)
+
+    def tool_node(state: AgentState) -> dict:
+        """Run tools then truncate outputs before they enter the message state."""
+        result = raw_tool_node.invoke(state)
+        result["messages"] = _truncate_tool_outputs(result.get("messages", []))
+        return result
 
     def agent_node(state: AgentState):
         api_key = state.get("ai_api_key") or DEFAULT_API_KEY
@@ -64,7 +95,12 @@ def build_graph(extra_tools: list = []):
             custom_instructions=custom_block,
         )
         system = SystemMessage(content=system_content)
-        response = llm_with_tools.invoke([system] + state["messages"])
+
+        # Rolling window: never send more than MAX_CONTEXT_MESSAGES to the LLM
+        all_msgs = state["messages"]
+        msgs = all_msgs[-MAX_CONTEXT_MESSAGES:] if len(all_msgs) > MAX_CONTEXT_MESSAGES else all_msgs
+
+        response = llm_with_tools.invoke([system] + msgs)
         return {"messages": [response]}
 
     graph = StateGraph(AgentState)
@@ -73,7 +109,11 @@ def build_graph(extra_tools: list = []):
     graph.set_entry_point("agent")
     graph.add_conditional_edges("agent", tools_condition)
     graph.add_edge("tools", "agent")
-    return graph.compile()
+
+    # Initialize checkpointer for state persistence
+    # Using MemorySaver for in-memory checkpointing (persists across requests in same app instance)
+    checkpointer = MemorySaver()
+    return graph.compile(checkpointer=checkpointer)
 
 
 def get_compiled_graph(extra_tools: list = []):
