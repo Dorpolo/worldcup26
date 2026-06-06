@@ -10,7 +10,7 @@ interface Props {
   params: { leagueId: string }
 }
 
-const NAV_TABS = [
+const BASE_NAV_TABS = [
   { href: '',             label: 'Chat',        icon: '◈' },
   { href: '/leaderboard', label: 'Leaderboard', icon: '↑' },
   { href: '/predictions', label: 'Predictions', icon: '⊡' },
@@ -20,6 +20,8 @@ const NAV_TABS = [
   { href: '/rules',       label: 'Rules',       icon: '≡' },
   { href: '/agent',       label: 'Agent',       icon: '⚡' },
 ]
+
+const OWNER_NAV_TAB = { href: '/settings', label: 'Settings', icon: '⚙' }
 
 export default async function LeagueLayout({ children, params }: Props) {
   const session = await auth()
@@ -41,6 +43,7 @@ export default async function LeagueLayout({ children, params }: Props) {
 
   const isOwner = membership.role === 'owner'
   const base = `/leagues/${params.leagueId}`
+  const navTabs = isOwner ? [...BASE_NAV_TABS, OWNER_NAV_TAB] : BASE_NAV_TABS
 
   return (
     <div className="flex flex-1 overflow-hidden min-h-0 flex-col lg:flex-row">
@@ -83,25 +86,8 @@ export default async function LeagueLayout({ children, params }: Props) {
 
         {/* Tab links */}
         <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
-          <LeagueTabNav base={base} tabs={NAV_TABS} vertical />
+          <LeagueTabNav base={base} tabs={navTabs} vertical />
         </div>
-
-        {/* Settings at bottom */}
-        {isOwner && (
-          <div
-            className="shrink-0 px-2 py-2"
-            style={{ borderTop: '1px solid rgb(var(--c-border-subtle))' }}
-          >
-            <Link
-              href={`${base}/settings`}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium w-full transition-all duration-150"
-              style={{ color: 'rgb(var(--c-text-3))' }}
-            >
-              <span className="text-[13px] w-4 text-center">⚙</span>
-              Settings
-            </Link>
-          </div>
-        )}
       </nav>
 
       {/* ── Main content (LeagueShell adds Declan sidebar on non-chat pages) ── */}
@@ -113,7 +99,7 @@ export default async function LeagueLayout({ children, params }: Props) {
         userRank={membership.rank ?? 0}
         userPoints={membership.totalPoints ?? 0}
         hasAiKey={!!user.aiApiKey}
-        navTabs={NAV_TABS}
+        navTabs={navTabs}
         base={base}
         isOwner={isOwner}
       >

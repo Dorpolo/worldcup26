@@ -1,8 +1,8 @@
 'use server'
 
 import { auth } from '@/auth'
-import { connectDB, MembershipModel, MatchModel, PredictionModel } from '@worldcup26/db'
-import { redirect } from 'next/navigation'
+import { connectDB, UserModel, LeagueModel, MembershipModel, MatchModel, PredictionModel } from '@worldcup26/db'
+import { redirect, notFound } from 'next/navigation'
 
 interface StageStats {
   predicted: number
@@ -40,11 +40,22 @@ export default async function StatsPage({
 
   await connectDB()
 
+  // Resolve slug to League._id and get User._id
+  const user = await UserModel.findOne({ email: session.user.email }).lean() as any
+  if (!user) {
+    redirect('/login')
+  }
+
+  const league = await LeagueModel.findOne({ slug: params.leagueId }).lean() as any
+  if (!league) {
+    notFound()
+  }
+
   // Get user membership in this league
   const membership = await MembershipModel.findOne({
-    leagueId: params.leagueId,
-    userEmail: session.user.email,
-  })
+    leagueId: league._id,
+    userId: user._id,
+  }).lean() as any
 
   if (!membership) {
     redirect(`/leagues/${params.leagueId}`)
@@ -53,8 +64,8 @@ export default async function StatsPage({
   // Get all matches and predictions
   const matches = await MatchModel.find({}).lean() as any[]
   const predictions = await PredictionModel.find({
-    userId: membership.userId,
-    leagueId: params.leagueId,
+    userId: user._id,
+    leagueId: league._id,
   }).lean() as any[]
 
   // Calculate stats
