@@ -93,7 +93,7 @@ export async function fetchMarketProbabilities(
     }
 
     // Cache for 5 minutes
-    await r.setex(cacheKey, MARKET_DATA_CACHE_TTL, result)
+    await r.set(cacheKey, result, { ex: MARKET_DATA_CACHE_TTL })
     return result
   } catch (err) {
     console.error('Failed to fetch market probabilities:', err)

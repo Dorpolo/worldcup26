@@ -2,6 +2,12 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
+import { PlayerSelectionModal } from '@/components/players/PlayerSelectionModal'
+import { TeamSelectionModal } from '@/components/teams/TeamSelectionModal'
+
+// Bonus types that pick a player from the synced roster rather than free text
+const PLAYER_PICKER_TYPES = new Set(['top_scorer', 'top_assist'])
+const TEAM_PICKER_TYPES = new Set(['tournament_winner'])
 
 interface BonusConfig {
   tournamentWinner: { enabled: boolean; points: number }
@@ -36,27 +42,38 @@ export function BonusPredictionsClient({ leagueId, config, existingPredictions, 
     return init
   })
 
+  // Underlying stored value (player apiId for player pickers; mirrors the label otherwise)
+  const [ids, setIds] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {}
+    for (const [k, p] of predMap) init[k] = p.value
+    return init
+  })
+
   const [saved, setSaved] = useState<Record<string, boolean>>({})
+  const [pickerFor, setPickerFor] = useState<string | null>(null)
+  const [teamPickerFor, setTeamPickerFor] = useState<string | null>(null)
   const [isPending, start] = useTransition()
 
   function setValue(key: string, v: string) {
     setValues((prev) => ({ ...prev, [key]: v }))
+    setIds((prev) => ({ ...prev, [key]: v }))
     setSaved((prev) => ({ ...prev, [key]: false }))
   }
 
   async function handleSave(type: string, key: string, customBonusId?: string) {
     const valueLabel = values[key] ?? ''
     if (!valueLabel.trim()) {
-      toast.error('Please enter a value')
+      toast.error('Please make a selection')
       return
     }
+    const value = (ids[key] ?? valueLabel).trim()
 
     start(async () => {
       try {
         const res = await fetch(`/api/leagues/${leagueId}/bonus-predictions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type, customBonusId, value: valueLabel.trim(), valueLabel: valueLabel.trim() }),
+          body: JSON.stringify({ type, customBonusId, value, valueLabel: valueLabel.trim() }),
         })
         const data = await res.json()
         if (!res.ok) throw new Error(data.error)
@@ -128,22 +145,47 @@ export function BonusPredictionsClient({ leagueId, config, existingPredictions, 
             </div>
 
             <div className="flex gap-2 items-center">
-              <input
-                type="text"
-                value={currentValue}
-                onChange={(e) => setValue(item.key, e.target.value)}
-                disabled={isLocked || isFinished}
-                placeholder={`Enter ${item.label.toLowerCase()}…`}
-                className="flex-1 text-sm focus:outline-none"
-                style={{
-                  background: 'rgb(var(--c-overlay-md))',
-                  border: '1px solid rgb(var(--c-border-subtle))',
-                  borderRadius: '10px',
-                  color: 'rgb(var(--c-text-1))',
-                  padding: '8px 12px',
-                  opacity: (isLocked || isFinished) ? 0.5 : 1,
-                }}
-              />
+              {PLAYER_PICKER_TYPES.has(item.type) || TEAM_PICKER_TYPES.has(item.type) ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (TEAM_PICKER_TYPES.has(item.type)) {
+                      setTeamPickerFor(item.key)
+                    } else {
+                      setPickerFor(item.key)
+                    }
+                  }}
+                  disabled={isLocked || isFinished}
+                  className="flex-1 text-sm text-left focus:outline-none transition-colors hover:brightness-110 disabled:cursor-not-allowed"
+                  style={{
+                    background: 'rgb(var(--c-overlay-md))',
+                    border: '1px solid rgb(var(--c-border-subtle))',
+                    borderRadius: '10px',
+                    color: currentValue ? 'rgb(var(--c-text-1))' : 'rgb(var(--c-text-3))',
+                    padding: '8px 12px',
+                    opacity: (isLocked || isFinished) ? 0.5 : 1,
+                  }}
+                >
+                  {currentValue || `Select ${item.label.toLowerCase()}…`}
+                </button>
+              ) : (
+                <input
+                  type="text"
+                  value={currentValue}
+                  onChange={(e) => setValue(item.key, e.target.value)}
+                  disabled={isLocked || isFinished}
+                  placeholder={`Enter ${item.label.toLowerCase()}…`}
+                  className="flex-1 text-sm focus:outline-none"
+                  style={{
+                    background: 'rgb(var(--c-overlay-md))',
+                    border: '1px solid rgb(var(--c-border-subtle))',
+                    borderRadius: '10px',
+                    color: 'rgb(var(--c-text-1))',
+                    padding: '8px 12px',
+                    opacity: (isLocked || isFinished) ? 0.5 : 1,
+                  }}
+                />
+              )}
               {!isLocked && !isFinished && (
                 <button
                   onClick={() => handleSave(item.type, item.key, item.customId)}
@@ -189,6 +231,34 @@ export function BonusPredictionsClient({ leagueId, config, existingPredictions, 
         <p className="text-[11px] text-center pt-2" style={{ color: 'rgb(var(--c-text-3))' }}>
           🔒 Bonus predictions locked — tournament has started
         </p>
+      )}
+
+      {pickerFor && (
+        <PlayerSelectionModal
+          title={`Select ${bonusItems.find((b) => b.key === pickerFor)?.label ?? 'Player'}`}
+          selectedPlayerId={ids[pickerFor]}
+          onClose={() => setPickerFor(null)}
+          onSelect={(player) => {
+            const key = pickerFor
+            setValues((prev) => ({ ...prev, [key]: player.name }))
+            setIds((prev) => ({ ...prev, [key]: player.apiPlayerId ?? player.id }))
+            setSaved((prev) => ({ ...prev, [key]: false }))
+          }}
+        />
+      )}
+
+      {teamPickerFor && (
+        <TeamSelectionModal
+          title={`Select ${bonusItems.find((b) => b.key === teamPickerFor)?.label ?? 'Team'}`}
+          selectedTeamApiId={ids[teamPickerFor]}
+          onClose={() => setTeamPickerFor(null)}
+          onSelect={(team) => {
+            const key = teamPickerFor
+            setValues((prev) => ({ ...prev, [key]: team.name }))
+            setIds((prev) => ({ ...prev, [key]: team.apiId }))
+            setSaved((prev) => ({ ...prev, [key]: false }))
+          }}
+        />
       )}
     </div>
   )

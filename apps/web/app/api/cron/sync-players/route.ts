@@ -35,18 +35,22 @@ export async function POST(req: NextRequest) {
     const teamsData = (await teamsResponse.json()) as any
     const teams = teamsData.response || []
 
+    console.log(`[sync-players] Fetched ${teams.length} teams`)
+
     let synced = 0
     let updated = 0
     let failed = 0
 
     // Fetch players for each team
     for (const team of teams) {
+      console.log(`[sync-players] Processing team: ${team.team?.name} (id: ${team.team?.id})`)
       try {
         const teamId = team.team?.id
         if (!teamId) continue
 
         const playersData = await fetchPlayers(teamId)
         const playersList = Array.isArray(playersData) ? playersData : []
+        console.log(`[sync-players]   fetchPlayers(${teamId}) returned ${playersList.length} players`)
 
         for (const playerData of playersList as any[]) {
           try {

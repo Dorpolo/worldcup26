@@ -90,20 +90,26 @@ export function MarketProbabilitiesBar({ matchId, leagueId, homeTeam, awayTeam, 
             <Info className="w-2.5 h-2.5 opacity-50" />
           </a>
 
-          {/* Hover tooltip with probabilities */}
+          {/* Hover tooltip with probabilities or unavailable message */}
           {showTooltip && (
             <div
-              className="absolute bottom-full left-0 mb-2 p-2 rounded-lg text-[9px] whitespace-nowrap z-50 pointer-events-none animate-in fade-in"
+              className="absolute bottom-full left-0 mb-2 p-2 rounded-lg text-[9px] z-50 pointer-events-none animate-in fade-in"
               style={{
                 background: 'rgb(var(--c-bg))',
                 border: '1px solid rgb(var(--c-border-normal))',
                 color: 'rgb(var(--c-text-2))'
               }}
             >
-              <p className="font-semibold mb-1">Market Probabilities:</p>
-              <p>🟢 {homeTeam}: {marketData.probabilities ? Math.round(marketData.probabilities.homeWin) : '?'}%</p>
-              <p>⚪ Draw: {marketData.probabilities ? Math.round(marketData.probabilities.draw) : '?'}%</p>
-              <p>🔴 {awayTeam}: {marketData.probabilities ? Math.round(marketData.probabilities.awayWin) : '?'}%</p>
+              {marketData.probabilities ? (
+                <>
+                  <p className="font-semibold mb-1">Market Probabilities:</p>
+                  <p>🟢 {homeTeam}: {Math.round(marketData.probabilities.homeWin)}%</p>
+                  <p>⚪ Draw: {Math.round(marketData.probabilities.draw)}%</p>
+                  <p>🔴 {awayTeam}: {Math.round(marketData.probabilities.awayWin)}%</p>
+                </>
+              ) : (
+                <p>Market data unavailable</p>
+              )}
             </div>
           )}
         </div>

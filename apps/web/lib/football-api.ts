@@ -44,7 +44,7 @@ export async function fetchFixtures(date: string) {
     date,
   })
 
-  await r.setex(cacheKey, 300, data)
+  await r.set(cacheKey, data, { ex: 300 })
   return data
 }
 
@@ -60,7 +60,7 @@ export async function fetchLiveFixtures() {
     live: 'all',
   })
 
-  await r.setex(cacheKey, 60, data) // 60s for live data
+  await r.set(cacheKey, data, { ex: 60 }) // 60s for live data
   return data
 }
 
@@ -82,7 +82,7 @@ export async function fetchTopScorers() {
     season: WC_SEASON,
   })
 
-  await r.setex(cacheKey, 3600, data)
+  await r.set(cacheKey, data, { ex: 3600 })
   return data
 }
 
@@ -100,7 +100,7 @@ export async function fetchStandings() {
   })
 
   // Cache for 30 minutes as standings update less frequently
-  await r.setex(cacheKey, 1800, data)
+  await r.set(cacheKey, data, { ex: 1800 })
   return data
 }
 
@@ -116,7 +116,7 @@ export async function fetchTeams() {
   })
 
   // Cache for 1 hour
-  await r.setex(cacheKey, 3600, data)
+  await r.set(cacheKey, data, { ex: 3600 })
   return data
 }
 
@@ -124,16 +124,22 @@ export async function fetchPlayers(teamId: number) {
   const r = getRedis()
   const cacheKey = `apifootball:players:team${teamId}:${WC_SEASON}`
   const cached = await r.get<unknown[]>(cacheKey)
-  if (cached) return cached
+  if (cached) {
+    console.log(`[fetchPlayers] Cache HIT for team ${teamId}`)
+    return cached
+  }
 
+  console.log(`[fetchPlayers] Cache MISS for team ${teamId}, calling API...`)
   const data = await apiFetch<unknown[]>('players', {
     league: WC_LEAGUE_ID,
     season: WC_SEASON,
     team: teamId,
+    page: 1,
   })
+  console.log(`[fetchPlayers] API returned ${Array.isArray(data) ? data.length : 'non-array'} items for team ${teamId}`)
 
   // Cache for 6 hours
-  await r.setex(cacheKey, 21600, data)
+  await r.set(cacheKey, data, { ex: 21600 })
   return data
 }
 
@@ -149,7 +155,7 @@ export async function fetchFixtureDetails(fixtureId: number) {
 
   // Cache for 30 minutes for finished matches, 5 minutes for live
   const cacheTime = 1800
-  await r.setex(cacheKey, cacheTime, data)
+  await r.set(cacheKey, data, { ex: cacheTime })
   return data
 }
 
@@ -168,6 +174,6 @@ export async function fetchLatestMatches(limit = 5) {
 
   // For now, just cache and return raw data
   // Frontend will sort by date
-  await r.setex(cacheKey, 600, data)
+  await r.set(cacheKey, data, { ex: 600 })
   return data
 }
